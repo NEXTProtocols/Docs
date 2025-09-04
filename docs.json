@@ -36,6 +36,12 @@
             "pages": [
               "api-reference/face-detection/checkface"
             ]
+          },
+          {
+            "group": "Generate picture",
+            "pages": [
+              "api-reference/generate-image/generatepicture"
+            ]
           }
         ]
       }
