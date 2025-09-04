@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.nextprotocol.fr"
     }
   ],
   "security": [
@@ -19,76 +19,112 @@
     }
   ],
   "paths": {
-    "/plants": {
+    "/": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "description": "Root endpoint",
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Message from the API",
+                      "enum": ["JJK is the best anime of all time"]
+                    }
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+          }
+        }
+      }
+    },
+    "/testapi/runsync": {
+      "post": {
+        "description": "Testing a serverless cluster in runpod named **Test API**",
+        "requestBody": {
+          "description": "Request body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": ["name", "last_name", "age"],
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "last_name": {
+                    "type": "string"
+                  },
+                  "age": {
+                    "type": "integer"
+                  },
+                  "sleep": {
+                    "type": "integer",
+                    "description": "Number of seconds the job will sleep for create a fake delay",
+                    "default": 1,
+                    "minimum": 1
+                  }
                 }
               }
             }
           }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "properties": {
+                    "delayTime": {
+                      "type": "integer",
+                      "description": "Number of seconds to get a worker to start the job"
+                    },
+                    "executionTime": {
+                      "type": "integer",
+                      "description": "Number of seconds the worker take for terminate the job"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the job"
+                    },
+                    "output":{
+                      "type": "object",
+                      "properties": {
+                        "content": {
+                          "type": "object",
+                          "properties": {
+                            "say": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": ["Success", "Input Error"]
+                        },
+                        "status_code": {
+                          "type": "integer",
+                          "enum": [200, 204]
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Status of the job",
+                      "enum": ["COMPLETED"]
+                    },
+                    "workerId": {
+                      "type": "string",
+                      "description": "Unique identifier for the worker"
+                    }
+                  }
                 }
               }
             }
@@ -96,121 +132,112 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    "/checkface/runsync": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "description": "Check in a face is good for a training lora ai model",
         "requestBody": {
-          "description": "Plant added to the store",
+          "description": "Request body",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
+                "required": ["id", "image"],
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Unique identifier for name image"
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "Base64 encoded image"
+                  },
+                  "crop_image": {
+                    "type": "boolean",
+                    "description": "If it's true **and the image have a good face**, image will be cropped to the face"
+                  }
+              }}
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "delayTime": {
+                      "type": "integer",
+                      "description": "Number of seconds to get a worker to start the job"
+                    },
+                    "executionTime": {
+                      "type": "integer",
+                      "description": "Number of seconds the worker take for terminate the job"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the job"
+                    },
+                    "output":{
+                      "type": "object",
+                      "properties": {
+                        "content": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "id of the image"
+                            },
+                            "is_good": {
+                              "type": "boolean",
+                              "description": "If the face is good for a training lora ai model"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "description": "Reason why the face is **not good** for a training lora ai model. If the face is good, this will be **Face detected and good size**",
+                              "enum": [
+                                "Face detected and good size",
+                                "Image too small width",
+                                "Image too small height",
+                                "No face",
+                                "More than one face",
+                                "Bad score",
+                                "Face too small",
+                                "Face too large"
+                              ]
+                            },
+                            "url_image": {
+                              "type": "string",
+                              "description": "Url of the image"
+                            }
+                          }
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": ["Success", "Input Error"]
+                        },
+                        "status_code": {
+                          "type": "integer",
+                          "enum": [200, 204]
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Status of the job",
+                      "enum": ["COMPLETED"]
+                    },
+                    "workerId": {
+                      "type": "string",
+                      "description": "Unique identifier for the worker"
+                    }
+                  }
+                }
               }
             }
           }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
         }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
       }
     }
   }
