@@ -38,7 +38,7 @@
             ]
           },
           {
-            "group": "Generate picture",
+            "group": "AI Generation",
             "pages": [
               "api-reference/generate-image/generatepicture"
             ]

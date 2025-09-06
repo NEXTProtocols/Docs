@@ -248,33 +248,76 @@
           "content": {
             "application/json": {
               "schema": {
-                "required": ["workflow_name", "prompt", "steps", "image_ratio"],
+                "required": ["workflow", "ai_model", "prompt_style", "loras", "prompt", "steps", "image_ratio", "batch_size"],
                 "type": "object",
                 "properties": {
-                  "workflow_name": {
+                  "workflow": {
                     "type": "string",
-                    "description": "The AI model workflow to use for image generation",
-                    "enum": ["flux_dev", "flux_schnell"]
+                    "description": "**⚠️ WARNING ⚠️ :** ONLY THE **Only Generate** WORKFLOW IS AVAILABLE FOR NOW.\n\nChoose the workflow to use for image generation : \n**Only Generate** : Only generate image without upscale, \n**Only Upscale** : Only upscale the image, \n**Generate and Upscale** : Generate image and upscale it too",
+                    "enum": ["Only Generate", "Only Upscale", "Generate and Upscale"]
+                  },
+                  "ai_model": {
+                    "type": "string",
+                    "description": "AI model to use for image generation",
+                    "enum": ["Flux 1.0 Dev", "Flux 1.0 Krea", "Flux 1.0 Schnell"]
+                  },
+                  "prompt_style": {
+                    "type": "array",
+                    "description": "Prompt style to use for image generation.",
+                    "example": ["PHOTOGRAPHIE — Long Exposure", "PHOTOGRAPHIE — Pro Studio Portrait (Softbox Key)", "ARCHITECTURE & INTERIOR — Sunset Glass Facade"],
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "loras": {
+                    "type": "array",
+                    "description": "Lora to use for image generation.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "lora": {
+                          "type": "string",
+                          "description": "Name of the lora",
+                          "example": "Minimal_Portrait_Photography_V1.0"
+                        },
+                        "strength":{
+                          "type": "number",
+                          "description": "Strength of the lora",
+                          "minimum": 0,
+                          "maximum": 2
+                        }
+                      }
+                    }
                   },
                   "prompt": {
                     "type": "string",
-                    "description": "Text description of the image you want to generate"
+                    "description": "Prompt to use for image generation."
                   },
                   "steps": {
                     "type": "integer",
-                    "description": "Number of denoising steps",
+                    "description": "Number of steps to use for image generation.",
                     "minimum": 1
+                  },
+                  "seed": {
+                    "type": "integer",
+                    "description": "Seed to use for image generation. If you don't want to use a seed, you can use 0. \n**WARNING :** If you use a seed, the image will be the same every time you use the same seed.",
+                    "minimum": 0,
+                    "default": 0
                   },
                   "image_ratio": {
                     "type": "string",
-                    "description": "Aspect ratio for the generated image",
-                    "enum": ["r1_1", "r4_3", "r3_2", "r16_9", "r2_35_1", "r4_5", "r2_3", "r9_16"]
+                    "description": "Aspect ratio for the generated image.",
+                    "enum": ["1:1", "4:3", "3:2", "16:9", "21:9", "4:5", "2:3", "9:16"]
                   },
                   "batch_size": {
                     "type": "integer",
-                    "description": "Number of images to generate in a single request",
-                    "minimum": 1,
-                    "default": 1
+                    "description": "Number of images to generate in a single request.",
+                    "minimum": 1
+                  },
+                  "optimize_output_picture": {
+                    "type": "boolean",
+                    "description": "If you want to optimize the output picture, use **true** for a webp image, **false** for a png image.",
+                    "default": false
                   }
                 }
               }
