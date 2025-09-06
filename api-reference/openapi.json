@@ -248,7 +248,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "required": ["workflow", "ai_model", "prompt_style", "loras", "prompt", "steps", "image_ratio", "batch_size"],
+                "required": ["workflow", "ai_model", "prompt", "steps", "image_ratio", "batch_size"],
                 "type": "object",
                 "properties": {
                   "workflow": {
@@ -264,6 +264,7 @@
                   "prompt_style": {
                     "type": "array",
                     "description": "Prompt style to use for image generation.",
+                    "default": [],
                     "example": ["PHOTOGRAPHIE — Long Exposure", "PHOTOGRAPHIE — Pro Studio Portrait (Softbox Key)", "ARCHITECTURE & INTERIOR — Sunset Glass Facade"],
                     "items": {
                       "type": "string"
@@ -272,6 +273,7 @@
                   "loras": {
                     "type": "array",
                     "description": "Lora to use for image generation.",
+                    "default": [],
                     "items": {
                       "type": "object",
                       "properties": {
