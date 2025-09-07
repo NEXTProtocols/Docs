@@ -42,3 +42,12 @@ Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/sett
 ### Resources
 - [Mintlify documentation](https://mintlify.com/docs)
 - [Mintlify community](https://mintlify.com/community)
+
+
+    workflow: Literal[
+        "Only Upscale 2K",
+        "Only Upscale 4K",
+        "Only Generate",
+        "Generate and Upscale 2K",
+        "Generate and Upscale 4K",
+    ]

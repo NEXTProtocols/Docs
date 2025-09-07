@@ -253,8 +253,8 @@
                 "properties": {
                   "workflow": {
                     "type": "string",
-                    "description": "**⚠️ WARNING ⚠️ :** ONLY THE **Only Generate** WORKFLOW IS AVAILABLE FOR NOW.\n\nChoose the workflow to use for image generation : \n**Only Generate** : Only generate image without upscale, \n**Only Upscale** : Only upscale the image, \n**Generate and Upscale** : Generate image and upscale it too",
-                    "enum": ["Only Generate", "Only Upscale", "Generate and Upscale"]
+                    "description": "**⚠️ WARNING ⚠️ :** ONLY THE **Only Generate** -  **Generate and Upscale 2K** -  **Generate and Upscale 4K** WORKFLOW IS AVAILABLE FOR NOW.\n\nChoose the workflow to use for image generation : \n**Only Generate** : Only generate image without upscale, \n**Only Upscale 2K** : Only upscale the image to 2K, \n**Only Upscale 4K** : Only upscale the image to 4K, \n**Generate and Upscale 2K** : Generate image and upscale it to 2K, \n**Generate and Upscale 4K** : Generate image and upscale it to 4K",
+                    "enum": ["Only Generate", "Only Upscale 2K", "Only Upscale 4K", "Generate and Upscale 2K", "Generate and Upscale 4K"]
                   },
                   "ai_model": {
                     "type": "string",
