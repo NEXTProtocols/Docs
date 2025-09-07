@@ -319,7 +319,7 @@
                   "optimize_output_picture": {
                     "type": "boolean",
                     "description": "If you want to optimize the output picture, use **true** for a webp image, **false** for a png image.",
-                    "default": false
+                    "default": true
                   }
                 }
               }
