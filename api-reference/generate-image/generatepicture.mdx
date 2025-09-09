@@ -2,3 +2,53 @@
 title: 'Image Generation'
 openapi: 'POST /generatepicture/runsync'
 ---
+
+## Important note
+All the formula are made for **4x RTX 4090 GPU** time generation.
+
+### Variables and constants
+
+| Symbol | Name                           | Value | Unit | Note |
+| -------- | ------------------------------------- | -------- | ------------------------------------- | -------- |
+| $Qt$     | Queue time                     | 5 | s | time in seconds for get a GPU to start the job |
+| $Ct$     | Cold Start time                     | 40 | s | time for load all model in the GPU |
+| $Up_{1}$     | Upscale 1024p to 2048p                     | 65 | s | time for upscale 1024p image to 2048p |
+| $Up_{2}$     | Upscale 2048p to 4096p                     | 15 | s | time for upscale 2048p image to 4096p |
+
+### Time estimation 
+The average time for generate is : 
+
+| Symbol | Unit                           | Note |
+| -------- | ------------------------------------- | -------- |
+| $avg_{1024p}$     | s                     | average time for generate 1024p image |
+| $avg_{2048p}$     | s                     | average time for generate 2048p image |
+| $avg_{4096p}$     | s                     | average time for generate 4096p image |
+
+For all the case, the first 1024p image will be generated in :
+
+$$
+avg_{1024p} = Qt + Ct + \frac{(steps \times 0.7) \times batch\_size}{4_{GPU}}
+$$
+
+For the other image, the time will be :
+
+$$
+avg_{2048p} = avg_{1024p} + Up_{1}
+$$
+$$
+avg_{4096p} = avg_{1024p} + Up_{1} + Up_{2}
+$$
+
+### Price estimation
+
+The price for generate is :
+
+$$
+price_{1024p} = avg_{1024p} \times 0.00122
+$$
+$$
+price_{2048p} = avg_{2048p} \times 0.00122
+$$
+$$
+price_{4096p} = avg_{4096p} \times 0.00122
+$$
