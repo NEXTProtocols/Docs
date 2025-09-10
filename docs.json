@@ -11,12 +11,18 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Docs",
         "groups": [
           {
             "group": "Getting started",
             "pages": [
               "index"
+            ]
+          },
+          {
+            "group": "Benchmark",
+            "pages": [
+              "benchmark/ai_generation"
             ]
           }
         ]

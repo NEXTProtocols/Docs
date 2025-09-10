@@ -1,0 +1,60 @@
+---
+title: "Text to Image"
+description: "AI Workflow benchmark time and price"
+sidebarTitle: "Text to Image"
+icon: "chart-line"
+tag: "NEW"
+---
+
+# Introduction
+
+The following benchmark tests the workflow with different GPUs and models.
+
+<Warning>Regardless of GPU choice, the **ComfyUI install cold start** is 20–40s.</Warning>
+
+<Tabs>
+  <Tab title="Flux 1.0 Dev">
+
+    <Accordion title="Configuration">
+    - `unet_name`: `flux1-dev.safetensors`  
+    - `weight_dtype`: `fp16`  
+    - `clip_name1`: `clip_l.safetensors`  
+    - `clip_name2`: `t5xxl_fp16.safetensors`  
+    - `type`: `flux`  
+    - `device`: `default`  
+    - `vae_name`: `ae.safetensors`
+    </Accordion>
+
+    ## 1024p image
+
+    Generation: `20 steps`, `batch size 4`.
+
+    | GPU | Cold start (no CLIP cache) | Cold start - cost per image | Warm start (CLIP cache) | Warm start - cost per image |
+    | --- | --- | --- | --- | --- |
+    | 4x RTX 4090 | 129s / $0.17 | $0.042 | 20.27s / $0.025 | $0.006 |
+    | 4x H100 SXL | 47.21s / $0.21 | $0.052 | 5.41s / $0.025 | $0.006 |
+
+  </Tab>
+
+  <Tab title="Flux 1.0 Krea">
+
+    <Accordion title="Configuration">
+    - `unet_name`: `flux1-krea-dev.safetensors`  
+    - `weight_dtype`: `fp16`  
+    - `clip_name1`: `clip_l.safetensors`  
+    - `clip_name2`: `t5xxl_fp16.safetensors`  
+    - `type`: `flux`  
+    - `device`: `default`  
+    - `vae_name`: `ae.safetensors`
+    </Accordion>
+
+    ## 4096p image
+
+    Generation: `20 steps`, `batch size 4`, `upscale 15 steps`.
+
+    | GPU | Cold start (no CLIP cache) | Cold start - cost per image | Warm start (CLIP cache) | Warm start - cost per image |
+    | --- | --- | --- | --- | --- |
+    | 4x RTX 4090 | 210s / $0.26 | 0.065$ | 135.47s / $0.167 | 0.042$ |
+    | 4x H100 SXL | 56.7s / $0.26 | 0.065$ | 39.1s / $0.18 | 0.045$ |
+  </Tab>
+</Tabs>
