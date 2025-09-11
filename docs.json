@@ -46,7 +46,8 @@
           {
             "group": "AI Generation",
             "pages": [
-              "api-reference/generate-image/generatepicture"
+              "api-reference/generate-image/text-to-image",
+              "api-reference/generate-image/upscale"
             ]
           }
         ]

@@ -397,6 +397,129 @@
           }
         }
       }
+    },
+    "/upscale/runsync": {
+      "post": {
+        "description": "Upscale an image with SUPIR",
+        "requestBody": {
+          "description": "Request body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": ["upscale_images", "all_images"],
+                "type": "object",
+                "properties": {
+                  "upscale_images": {
+                    "type": "string",
+                    "enum": ["Low", "High"],
+                    "description": "Choice of upscale image quality:\n **Low**: 10 steps for upscale, 2-3s for upscale\n**High**: 50 steps for upscale, 10-15s for upscale"
+                  },
+                  "all_images": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "description": "List of images to upscale",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "unique id for the image"
+                        },
+                        "base64_image": {
+                          "type": "string",
+                          "description": "Base64 encoded image"
+                        },
+                        "final_width": {
+                          "type": "integer",
+                          "description": "Final width of the image"
+                        },
+                        "final_height": {
+                          "type": "integer",
+                          "description": "Final height of the image"
+                        }
+                      }
+                    }
+                  },
+                  "optimize_picture": {
+                    "type": "boolean",
+                    "description": "If you want to optimize the output picture, use **true** for a webp image, **false** for a png image.",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "delayTime": {
+                      "type": "integer",
+                      "description": "Number of seconds to get a worker to start the job"
+                    },
+                    "executionTime": {
+                      "type": "integer",
+                      "description": "Number of seconds the worker take for terminate the job"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the job"
+                    },
+                    "output":{
+                      "type": "object",
+                      "properties": {
+                        "content": {
+                          "type": "object",
+                          "properties": {
+                            "signed_url_images": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Signed URLs of the generated images"
+                            }
+                          }
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": ["Success", "Input Error"]
+                        },
+                        "status_code": {
+                          "type": "integer",
+                          "enum": [200, 204]
+                        },
+                        "price_jobs_dollar": {
+                          "type": "number",
+                          "description": "Price of the job in dollars",
+                          "example": 0.00431
+                        },
+                        "gpu_use": {
+                          "type": "string",
+                          "description": "GPU used for the job",
+                          "enum": ["RTX 4090", "RTX 5090"]
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Status of the job",
+                      "enum": ["COMPLETED"]
+                    },
+                    "workerId": {
+                      "type": "string",
+                      "description": "Unique identifier for the worker"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
