@@ -409,7 +409,7 @@
                 "required": ["upscale_images", "all_images"],
                 "type": "object",
                 "properties": {
-                  "upscale_images": {
+                  "upscale_model": {
                     "type": "string",
                     "enum": ["Low", "High"],
                     "description": "Choice of upscale image quality:\n **Low**: 10 steps for upscale, 2-3s for upscale\n**High**: 50 steps for upscale, 10-15s for upscale"
