@@ -22,7 +22,8 @@
           {
             "group": "Benchmark",
             "pages": [
-              "benchmark/ai_generation"
+              "benchmark/text_to_image",
+              "benchmark/training"
             ]
           }
         ]
