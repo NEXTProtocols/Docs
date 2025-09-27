@@ -1,0 +1,570 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+      "title": "OpenAPI Plant Store",
+      "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+      "license": {
+        "name": "Apache 2.0"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://api.runpod.ai"
+      }
+    ],
+    "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "paths": {
+        "/v2/6lieasos6wy1tl/run": {
+            "post": {
+              "description": "Check in a face is good for a training lora ai model",
+              "requestBody": {
+                "description": "Request body",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "required": ["input"],
+                      "type": "object",
+                      "properties": {
+                        "input": {
+                          "type": "object",
+                          "required": ["id", "signed_image_url"],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "Unique identifier for name image"
+                            },
+                            "signed_image_url": {
+                              "type": "string",
+                              "description": "URL of the image"
+                            },
+                            "crop_image": {
+                              "type": "boolean",
+                              "default": false,
+                              "description": "If it's true **and the image have a good face**, image will be cropped to the face"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Success",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "delayTime": {
+                            "type": "integer",
+                            "description": "Number of seconds to get a worker to start the job"
+                          },
+                          "executionTime": {
+                            "type": "integer",
+                            "description": "Number of seconds the worker take for terminate the job"
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "Unique identifier for the job"
+                          },
+                          "output":{
+                            "type": "object",
+                            "properties": {
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "id of the image"
+                                  },
+                                  "is_good": {
+                                    "type": "boolean",
+                                    "description": "If the face is good for a training lora ai model"
+                                  },
+                                  "reason": {
+                                    "type": "string",
+                                    "description": "Reason why the face is **not good** for a training lora ai model. If the face is good, this will be **Face detected and good size**",
+                                    "enum": [
+                                      "Face detected and good size",
+                                      "Image too small width",
+                                      "Image too small height",
+                                      "No face",
+                                      "More than one face",
+                                      "Bad score",
+                                      "Face too small",
+                                      "Face too large"
+                                    ]
+                                  },
+                                  "url_image": {
+                                    "type": "string",
+                                    "description": "Url of the image"
+                                  }
+                                }
+                              },
+                              "message": {
+                                "type": "string",
+                                "enum": ["Success", "Input Error"]
+                              },
+                              "status_code": {
+                                "type": "integer",
+                                "enum": [200, 204]
+                              }
+                            }
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "Status of the job",
+                            "enum": ["COMPLETED"]
+                          },
+                          "workerId": {
+                            "type": "string",
+                            "description": "Unique identifier for the worker"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        },
+        "/v2/cx670xh95pd3tx/run": {
+            "post": {
+              "description": "Upscale an image",
+              "requestBody": {
+                "description": "Request body",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "required": ["input"],
+                      "type": "object",
+                      "properties": {
+                        "input": {
+                          "type": "object",
+                          "required": ["upscale_model", "all_images"],
+                          "properties": {
+                          "upscale_model": {
+                            "type": "string",
+                            "enum": ["Low", "High"],
+                            "description": "Choice of upscale image quality:\n **Low**: 10 steps for upscale, 2-3s for upscale\n**High**: 50 steps for upscale, 10-15s for upscale"
+                          },
+                          "all_images": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "description": "List of images to upscale",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "description": "unique id for the image"
+                                },
+                                "base64_image": {
+                                  "type": "string",
+                                  "description": "Base64 encoded image"
+                                },
+                                "final_width": {
+                                  "type": "integer",
+                                  "description": "Final width of the image"
+                                },
+                                "final_height": {
+                                  "type": "integer",
+                                  "description": "Final height of the image"
+                                }
+                              }
+                            }
+                          },
+                          "optimize_picture": {
+                            "type": "boolean",
+                            "description": "If you want to optimize the output picture, use **true** for a webp image, **false** for a png image.",
+                            "default": false
+                          },
+                          "expire_in": {
+                            "type": "integer",
+                            "description": "Number of seconds to expire the image",
+                            "default": 604800
+                          }
+                        }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Success",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "delayTime": {
+                            "type": "integer",
+                            "description": "Number of seconds to get a worker to start the job"
+                          },
+                          "executionTime": {
+                            "type": "integer",
+                            "description": "Number of seconds the worker take for terminate the job"
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "Unique identifier for the job"
+                          },
+                          "output":{
+                            "type": "object",
+                            "properties": {
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "signed_url_images": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "description": "Signed URLs of the generated images"
+                                  }
+                                }
+                              },
+                              "message": {
+                                "type": "string",
+                                "enum": ["Success", "Input Error"]
+                              },
+                              "status_code": {
+                                "type": "integer",
+                                "enum": [200, 204]
+                              },
+                              "price_jobs_dollar": {
+                                "type": "number",
+                                "description": "Price of the job in dollars",
+                                "example": 0.00431
+                              },
+                              "gpu_use": {
+                                "type": "string",
+                                "description": "GPU used for the job",
+                                "enum": ["RTX 4090", "RTX 5090"]
+                              }
+                            }
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "Status of the job",
+                            "enum": ["COMPLETED"]
+                          },
+                          "workerId": {
+                            "type": "string",
+                            "description": "Unique identifier for the worker"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        },
+        "/v2/m4nkmx48pub66b/run": {
+          "post": {
+            "description": "Generate AI Image with ComfyUI",
+            "requestBody": {
+              "description": "Request body",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "required": ["input"],
+                    "type": "object",
+                      "properties": {
+                        "input": {
+                        "type": "object",
+                        "required": ["workflow", "ai_model", "prompt", "steps", "image_ratio", "batch_size"],
+                        "properties": {
+                            "workflow": {
+                              "type": "string",
+                              "description": "Choose the workflow to use for image generation : \n**Only Generate** : Only generate image without upscale, \n**Generate and Upscale 2K** : Generate image and upscale it to 2K, \n**Generate and Upscale 4K** : Generate image and upscale it to 4K",
+                              "enum": ["Only Generate", "Generate and Upscale 2K", "Generate and Upscale 4K"]
+                            },
+                            "ai_model": {
+                              "type": "string",
+                              "description": "AI model to use for image generation",
+                              "enum": ["Flux 1.0 Dev", "Flux 1.0 Krea", "Flux 1.0 Schnell"]
+                            },
+                            "prompt_style": {
+                              "type": "array",
+                              "description": "Prompt style to use for image generation.",
+                              "default": [],
+                              "example": ["PHOTOGRAPHIE — Long Exposure", "PHOTOGRAPHIE — Pro Studio Portrait (Softbox Key)", "ARCHITECTURE & INTERIOR — Sunset Glass Facade"],
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "loras": {
+                              "type": "array",
+                              "description": "Lora to use for image generation.",
+                              "default": [],
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "lora": {
+                                    "type": "string",
+                                    "description": "Name of the lora",
+                                    "example": "Minimal_Portrait_Photography_V1.0"
+                                  },
+                                  "strength":{
+                                    "type": "number",
+                                    "description": "Strength of the lora",
+                                    "minimum": 0,
+                                    "maximum": 2
+                                  }
+                                }
+                              }
+                            },
+                            "prompt": {
+                              "type": "string",
+                              "description": "Prompt to use for image generation."
+                            },
+                            "steps": {
+                              "type": "integer",
+                              "description": "Number of steps to use for image generation.",
+                              "minimum": 1
+                            },
+                            "seed": {
+                              "type": "integer",
+                              "description": "Seed to use for image generation. If you don't want to use a seed, you can use 0. \n**WARNING :** If you use a seed, the image will be the same every time you use the same seed.",
+                              "minimum": 0,
+                              "default": 0
+                            },
+                            "image_ratio": {
+                              "type": "string",
+                              "description": "Aspect ratio for the generated image.",
+                              "enum": ["1:1", "4:3", "3:2", "16:9", "21:9", "4:5", "2:3", "9:16"]
+                            },
+                            "batch_size": {
+                              "type": "integer",
+                              "description": "Number of images to generate in a single request.",
+                              "minimum": 1
+                            },
+                            "optimize_output_picture": {
+                              "type": "boolean",
+                              "description": "If you want to optimize the output picture, use **true** for a webp image, **false** for a png image.",
+                              "default": true
+                            },
+                            "expire_in": {
+                              "type": "integer",
+                              "description": "Number of seconds to expire the image",
+                              "default": 604800
+                            }
+                          }
+                        }
+                      }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "delayTime": {
+                          "type": "integer",
+                          "description": "Number of seconds to get a worker to start the job"
+                        },
+                        "executionTime": {
+                          "type": "integer",
+                          "description": "Number of seconds the worker take for terminate the job"
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier for the job"
+                        },
+                        "output":{
+                          "type": "object",
+                          "properties": {
+                            "content": {
+                              "type": "object",
+                              "properties": {
+                                "signed_url_pictures": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "description": "Signed URLs of the generated images"
+                                }
+                              }
+                            },
+                            "message": {
+                              "type": "string",
+                              "enum": ["Success", "Input Error"]
+                            },
+                            "status_code": {
+                              "type": "integer",
+                              "enum": [200, 204]
+                            },
+                            "price_jobs_dollar": {
+                              "type": "number",
+                              "description": "Price of the job in dollars",
+                              "example": 0.00431
+                            },
+                            "gpu_use": {
+                              "type": "string",
+                              "description": "GPU used for the job",
+                              "enum": ["RTX 4090", "RTX 5090"]
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Status of the job",
+                          "enum": ["COMPLETED"]
+                        },
+                        "workerId": {
+                          "type": "string",
+                          "description": "Unique identifier for the worker"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/v2/mw3zg7346d15vb/run": {
+          "post": {
+            "description": "Check in a face is good for a training lora ai model",
+            "requestBody": {
+              "description": "Request body",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "required": ["input"],
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "required": ["id", "training_picture_url", "gender"],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Unique identifier for the training image"
+                          },
+                          "training_picture_url": {
+                            "type": "string",
+                            "description": "URL of the training image"
+                          },
+                          "gender": {
+                            "type": "string",
+                            "description": "Gender of the person in the training image",
+                            "enum": ["man", "woman"]
+                          },
+                          "trigger_word": {
+                            "type": "string",
+                            "default": "ohwx",
+                            "description": "Trigger word for the training image"
+                          },
+                          "epoch": {
+                            "type": "integer",
+                            "description": "Number of training steps per picture. 10 pictures and 200 epochs will be 2000 steps",
+                            "default": 200
+                          },
+                          "epoch_save_n": {
+                            "type": "integer",
+                            "description": "Number of epochs to save the model",
+                            "default": 25
+                          },
+                          "train_batch_size": {
+                            "type": "integer",
+                            "description": "Number of pictures to train in a single request",
+                            "default": 1
+                          },
+                          "expire_in": {
+                            "type": "integer",
+                            "description": "Number of seconds to expire the model",
+                            "default": 604800
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "delayTime": {
+                          "type": "integer",
+                          "description": "Number of seconds to get a worker to start the job"
+                        },
+                        "executionTime": {
+                          "type": "integer",
+                          "description": "Number of seconds the worker take for terminate the job"
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier for the job"
+                        },
+                        "output":{
+                          "type": "object",
+                          "properties": {
+                            "content": {
+                              "type": "object",
+                              "properties": {
+                                "model_url": {
+                                  "type": "string",
+                                  "description": "URL of the trained model"
+                                }
+                              }
+                            },
+                            "message": {
+                              "type": "string",
+                              "enum": ["Success", "Input Error"]
+                            },
+                            "status_code": {
+                              "type": "integer",
+                              "enum": [200, 204]
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Status of the job",
+                          "enum": ["COMPLETED"]
+                        },
+                        "workerId": {
+                          "type": "string",
+                          "description": "Unique identifier for the worker"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+    }
+  }

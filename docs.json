@@ -31,24 +31,46 @@
       {
         "tab": "API reference",
         "groups": [
-          {
-            "group": "Testing endpoints",
+          { 
+            "group": "NEXT Protocol",
+            "icon": "server",
+            "tag": "FRONTEND",
             "pages": [
-              "api-reference/testing-endpoints/root",
-              "api-reference/testing-endpoints/runpod-test"
+                {
+                  "group": "Generate IA picture",
+                  "pages": [
+                    "api-reference/nextprotocol/generationimage/sync_texttoimage",
+                    "api-reference/nextprotocol/generationimage/async_texttoimage"
+                  ]
+                },
+                {
+                  "group": "Upscale IA picture",
+                  "pages": [
+                    "api-reference/nextprotocol/upscale/sync_upscale",
+                    "api-reference/nextprotocol/upscale/async_upscale"
+                  ]
+                }
             ]
           },
           {
-            "group": "Face detection",
+            "group": "RUNPOD",
+            "icon": "computer",
+            "tag": "BACKEND",
             "pages": [
-              "api-reference/face-detection/checkface"
-            ]
-          },
-          {
-            "group": "AI Generation",
-            "pages": [
-              "api-reference/generate-image/text-to-image",
-              "api-reference/generate-image/upscale"
+              {
+                "group": "CPU",
+                "pages": [
+                  "api-reference/runpod/checkface"
+                ]
+              },
+              {
+                "group": "GPU",
+                "pages": [
+                  "api-reference/runpod/upscale",
+                  "api-reference/runpod/texttoimage",
+                  "api-reference/runpod/train"
+                ]
+              }
             ]
           }
         ]
