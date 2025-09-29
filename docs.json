@@ -53,7 +53,15 @@
                     "api-reference/nextprotocol/upscale/async_upscale"
                   ]
                 },
-                
+                {
+                  "group": "Check Face",
+                  "icon": "radar",
+                  "tag": "NEW",
+                  "pages": [
+                    "api-reference/nextprotocol/checkface/async_checkface",
+                    "api-reference/nextprotocol/checkface/coldstart"
+                  ]
+                },
                 {
                   "group": "Training",
                   "tag": "NEW",
