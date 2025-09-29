@@ -38,16 +38,27 @@
             "pages": [
                 {
                   "group": "Generate IA picture",
+                  "icon": "image",
                   "pages": [
                     "api-reference/nextprotocol/generationimage/sync_texttoimage",
                     "api-reference/nextprotocol/generationimage/async_texttoimage"
                   ]
                 },
                 {
-                  "group": "Upscale IA picture",
+                  "group": "Upscale",
+                  "icon": "crop",
                   "pages": [
                     "api-reference/nextprotocol/upscale/sync_upscale",
                     "api-reference/nextprotocol/upscale/async_upscale"
+                  ]
+                },
+                {
+                  "group": "Training",
+                  "tag": "NEW",
+                  "icon": "brain-circuit",
+                  "pages": [
+                    "api-reference/nextprotocol/training/sync_train",
+                    "api-reference/nextprotocol/training/async_train"
                   ]
                 }
             ]

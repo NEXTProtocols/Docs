@@ -594,6 +594,259 @@
                     }
                 }
             }
+        },
+        "/training/sync": {
+            "post": {
+                "description": "Train a model",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["uuid_client", "session_id", "id", "list_signed_urls", "gender", "epoch"],
+                                "properties": {
+                                    "uuid_client": {
+                                        "type": "string",
+                                        "description": "uuid of the supabase id client"
+                                    },
+                                    "session_id": {
+                                        "type": "string",
+                                        "description": "session of the current training"
+                                    },
+                                    "id": {
+                                        "type": "string",
+                                        "description": "unique id for the training"
+                                    },
+                                    "list_signed_urls": {
+                                        "type": "array",
+                                        "description": "list of signed urls for the training",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "signed url for the training"
+                                        },
+                                        "example": ["https://s3.nextprotocol.fr/training/input/1234567890.png", "https://s3.nextprotocol.fr/training/input/1234567891.png", "..."]
+                                    },
+                                    "gender": {
+                                        "type": "string",
+                                        "enum": ["man", "woman"],
+                                        "description": "gender of the person in the training"
+                                    },
+                                    "trigger_word": {
+                                        "type": "string",
+                                        "description": "trigger word for the training"
+                                    },
+                                    "epoch": {
+                                        "type": "integer",
+                                        "description": "number of training steps per picture. 10 pictures and 200 epochs will be 2000 steps"
+                                    },
+                                    "epoch_save_n": {
+                                        "type": "integer",
+                                        "description": "number of epochs to save the model"
+                                    },
+                                    "train_batch_size": {
+                                        "type": "integer",
+                                        "description": "number of pictures to train in a single request"
+                                    },
+                                    "expire_in": {
+                                        "type": "integer",
+                                        "description": "number of seconds to expire the model",
+                                        "default": 604800
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Model trained successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "details": {
+                                            "type": "string",
+                                            "description": "Response if the workflow is running",
+                                            "example": "Workflow TRAINING for {user_email} is running..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/training/async":{
+            "post": {
+                "description": "Train a model",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["uuid_client", "session_id", "id", "list_signed_urls", "gender", "epoch"],
+                                "properties": {
+                                    "uuid_client": {
+                                        "type": "string",
+                                        "description": "uuid of the supabase id client"
+                                    },
+                                    "session_id": {
+                                        "type": "string",
+                                        "description": "session of the current training"
+                                    },
+                                    "id": {
+                                        "type": "string",
+                                        "description": "unique id for the training"
+                                    },
+                                    "list_signed_urls": {
+                                        "type": "array",
+                                        "description": "list of signed urls for the training",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "signed url for the training"
+                                        },
+                                        "example": ["https://s3.nextprotocol.fr/training/input/1234567890.png", "https://s3.nextprotocol.fr/training/input/1234567891.png", "..."]
+                                    },
+                                    "gender": {
+                                        "type": "string",
+                                        "enum": ["man", "woman"],
+                                        "description": "gender of the person in the training"
+                                    },
+                                    "trigger_word": {
+                                        "type": "string",
+                                        "description": "trigger word for the training"
+                                    },
+                                    "epoch": {
+                                        "type": "integer",
+                                        "description": "number of training steps per picture. 10 pictures and 200 epochs will be 2000 steps"
+                                    },
+                                    "epoch_save_n": {
+                                        "type": "integer",
+                                        "description": "number of epochs to save the model"
+                                    },
+                                    "train_batch_size": {
+                                        "type": "integer",
+                                        "description": "number of pictures to train in a single request"
+                                    },
+                                    "expire_in": {
+                                        "type": "integer",
+                                        "description": "number of seconds to expire the model",
+                                        "default": 604800
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Model trained successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "epoch": {
+                                            "type": "integer",
+                                            "description": "Nombre d'époques d'entraînement utilisées",
+                                            "example": 1
+                                        },
+                                        "epoch_save_n": {
+                                            "type": "integer",
+                                            "description": "Nombre d'époques entre chaque sauvegarde",
+                                            "example": 1
+                                        },
+                                        "gender": {
+                                            "type": "string",
+                                            "enum": ["man", "woman"],
+                                            "description": "Genre de la personne entraînée",
+                                            "example": "man"
+                                        },
+                                        "gpu_use": {
+                                            "type": "string",
+                                            "description": "GPU utilisé pour l'entraînement",
+                                            "example": "A100"
+                                        },
+                                        "history": {
+                                            "type": "integer",
+                                            "description": "Numéro d'historique de l'entraînement",
+                                            "example": 3
+                                        },
+                                        "id_lora": {
+                                            "type": "string",
+                                            "description": "Identifiant du modèle LoRA entraîné",
+                                            "example": "training"
+                                        },
+                                        "indexe": {
+                                            "type": "integer",
+                                            "description": "Index de l'opération d'entraînement",
+                                            "example": 4
+                                        },
+                                        "output_model": {
+                                            "type": "string",
+                                            "description": "URL signée du modèle entraîné (.safetensors)",
+                                            "example": "https://s3.gra.io.cloud.ovh.net/s3-nextprotocol/training/training.safetensors?X-Amz-Algorithm=..."
+                                        },
+                                        "price": {
+                                            "type": "number",
+                                            "description": "Prix de l'entraînement en dollars",
+                                            "example": 0.60800
+                                        },
+                                        "request_finish_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "description": "Timestamp de fin de l'entraînement",
+                                            "example": "2025-09-29T08:18:37.652795"
+                                        },
+                                        "request_made_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true,
+                                            "description": "Timestamp de début de l'entraînement",
+                                            "example": null
+                                        },
+                                        "session_id": {
+                                            "type": "string",
+                                            "description": "Identifiant unique de la session d'entraînement",
+                                            "example": "2c8ea1bd-c02f-4dbb-8b94-41e9dca02b8c"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": ["COMPLETED", "PENDING", "FAILED"],
+                                            "description": "Statut de l'entraînement",
+                                            "example": "COMPLETED"
+                                        },
+                                        "train_batch_size": {
+                                            "type": "integer",
+                                            "description": "Taille du batch d'entraînement",
+                                            "example": 1
+                                        },
+                                        "training_picture": {
+                                            "type": "string",
+                                            "description": "URL signée de l'archive ZIP contenant les images d'entraînement",
+                                            "example": "https://s3.gra.io.cloud.ovh.net/s3-nextprotocol/training/training_2c8ea1bd-c02f-4dbb-8b94-41e9dca02b8c_training.zip?X-Amz-Algorithm=..."
+                                        },
+                                        "trigger_word": {
+                                            "type": "string",
+                                            "description": "Mot-clé déclencheur pour utiliser le modèle",
+                                            "example": "ohwx"
+                                        },
+                                        "user_id": {
+                                            "type": "string",
+                                            "description": "Identifiant unique de l'utilisateur",
+                                            "example": "03202cd6-349d-461a-87d5-68cce978f279"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
