@@ -36,6 +36,7 @@
             "icon": "server",
             "tag": "FRONTEND",
             "pages": [
+                "api-reference/nextprotocol/ping",
                 {
                   "group": "Generate IA picture",
                   "icon": "image",

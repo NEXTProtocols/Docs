@@ -847,6 +847,30 @@
                     }
                 }
             }
+        },
+        "/": {
+            "get": {
+                "description": "Ping the server",
+                "responses": {
+                    "200": {
+                        "description": "Server is running",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Message from the server",
+                                            "example": "Demon slayer is the best anime of all time"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
