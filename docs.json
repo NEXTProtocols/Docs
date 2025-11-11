@@ -7,6 +7,10 @@
     "light": "#00BBA7",
     "dark": "#009689"
   },
+  "banner": {
+    "content": "Mocking API is now live! See our [changelog](/api-reference/mocking-data) for details.",
+    "dismissible": true
+  },
   "favicon": "/favicon.ico",
   "navigation": {
     "tabs": [
@@ -31,10 +35,17 @@
       {
         "tab": "API reference",
         "groups": [
+          {
+            "group": "Mocking Data",
+            "icon": "database",
+            "tag": "NEW",
+              "pages": [
+                "api-reference/mocking-data"
+              ]
+          },
           { 
             "group": "NEXT Protocol",
             "icon": "server",
-            "tag": "FRONTEND",
             "pages": [
                 "api-reference/nextprotocol/ping",
                 {
@@ -56,7 +67,6 @@
                 {
                   "group": "Check Face",
                   "icon": "radar",
-                  "tag": "NEW",
                   "pages": [
                     "api-reference/nextprotocol/checkface/async_checkface",
                     "api-reference/nextprotocol/checkface/coldstart"
@@ -64,7 +74,6 @@
                 },
                 {
                   "group": "Training",
-                  "tag": "NEW",
                   "icon": "brain-circuit",
                   "pages": [
                     "api-reference/nextprotocol/training/sync_train",
@@ -76,7 +85,6 @@
           {
             "group": "RUNPOD",
             "icon": "computer",
-            "tag": "BACKEND",
             "pages": [
               {
                 "group": "CPU",
