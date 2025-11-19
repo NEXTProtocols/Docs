@@ -8,7 +8,7 @@
     "dark": "#009689"
   },
   "banner": {
-    "content": "Mocking API is now live! See our [changelog](/api-reference/mocking-data) for details.",
+    "content": "Last change : 19 Novembre 2025",
     "dismissible": true
   },
   "favicon": "/favicon.ico",
@@ -111,11 +111,6 @@
           "anchor": "OpenAPI Docs",
           "href": "https://api.nextprotocol.fr/redoc",
           "icon": "code"
-        },
-        {
-          "anchor": "Grafana",
-          "href": "https://grafana.nextprotocol.fr",
-          "icon": "chart-line"
         },
         {
           "anchor": "Portainer",
