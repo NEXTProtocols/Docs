@@ -565,6 +565,165 @@
               }
             }
           }
+        },
+        "/v2/{endpoint_id}/run": {
+          "post": {
+            "description": "Generate AI Image with ComfyUI",
+            "parameters": [
+              {
+                "name": "endpoint_id",
+                "in": "path",
+                "required": true,
+                "description": "Unique identifier for the endpoint",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "requestBody": {
+              "description": "Request body",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "required": ["input"],
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "required": ["workflow_json"],
+                        "properties": {
+                          "workflow_json": {
+                            "type": "object",
+                            "description": "JSON object of the workflow ComfyUI. Export it with the option **Export (API)** in the ComfyUI UI."
+                          },
+                          "models": {
+                            "type": "array",
+                            "description": "List of models to use for the generation",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string",
+                                  "description": "Name of the model",
+                                  "example": "flux1-schnell-fp8.safetensors"
+                                },
+                                "type": {
+                                  "type": "string",
+                                  "description": "Type of the model",
+                                  "enum": ["vae", "clip", "loras", "checkpoints", "unet"]
+                                },
+                                "weight": {
+                                  "type": "number",
+                                  "description": "Weight of the model in Mo",
+                                  "default": 1000
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "description": "URL of the model",
+                                  "example": "https://example.com/model.safetensors"
+                                },
+                                "huggingface": {
+                                  "type": "object",
+                                  "properties": {
+                                    "path_repo": {
+                                      "type": "string",
+                                      "description": "Path in the huggingface repository",
+                                      "example": "flux1-schnell-fp8.safetensors"
+                                    },
+                                    "repo_id": {
+                                      "type": "string",
+                                      "description": "Repository ID of the model",
+                                      "example": "Comfy-Org/flux1-schnell"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "loras": {
+                            "type": "array",
+                            "description": "List of loras to use for the generation",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string",
+                                  "description": "Name of the lora",
+                                  "example": "Minimal_Portrait_Photography_V1.0"
+                                },
+                                "type": {
+                                  "type": "string",
+                                  "description": "Type of the lora",
+                                  "enum": ["loras"]
+                                },
+                                "weight": {
+                                  "type": "number",
+                                  "description": "Weight of the lora in Mo",
+                                  "default": 1000
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "description": "URL of the lora",
+                                  "example": "https://example.com/Minimal_Portrait_Photography_V1.0.safetensors"
+                                },
+                                "huggingface": {
+                                  "type": "object",
+                                  "properties": {
+                                    "path_repo": {
+                                      "type": "string",
+                                      "description": "Path in the huggingface repository",
+                                      "example": "Minimal_Portrait_Photography_V1.0.safetensors"
+                                    },
+                                    "repo_id": {
+                                      "type": "string",
+                                      "description": "Repository ID of the lora",
+                                      "example": "black-forest-labs/Minimal_Portrait_Photography_V1.0"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "settings_scaled_by_gpu_count": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string",
+                                  "description": "Title of the settings"
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "description": "Value of the settings"
+                                }
+                              }
+                            }
+                          },
+                          "settings_fixed_per_gpu": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string",
+                                  "description": "Title of the settings"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "description": "Value of the settings"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
     }
   }
