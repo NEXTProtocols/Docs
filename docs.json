@@ -8,7 +8,7 @@
     "dark": "#009689"
   },
   "banner": {
-    "content": "Last change : 20 Novembre 2025",
+    "content": "Last change : 21 Novembre 2025",
     "dismissible": true
   },
   "favicon": "/favicon.ico",
@@ -48,6 +48,14 @@
             "icon": "server",
             "pages": [
                 "api-reference/nextprotocol/ping",
+                "api-reference/nextprotocol/async_checkface",
+                {
+                  "group": "IA Gen",
+                  "icon": "computer",
+                  "pages": [
+                    "api-reference/nextprotocol/IA Gen/texttoimage"
+                  ]
+                },
                 {
                   "group": "Generate IA picture",
                   "icon": "image",
@@ -62,14 +70,6 @@
                   "pages": [
                     "api-reference/nextprotocol/upscale/sync_upscale",
                     "api-reference/nextprotocol/upscale/async_upscale"
-                  ]
-                },
-                {
-                  "group": "Check Face",
-                  "icon": "radar",
-                  "pages": [
-                    "api-reference/nextprotocol/checkface/async_checkface",
-                    "api-reference/nextprotocol/checkface/coldstart"
                   ]
                 },
                 {

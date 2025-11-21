@@ -722,6 +722,76 @@
                   }
                 }
               }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "delayTime": {
+                          "type": "integer",
+                          "description": "Number of seconds to get a worker to start the job"
+                        },
+                        "executionTime": {
+                          "type": "integer",
+                          "description": "Number of seconds the worker take for terminate the job"
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier for the job"
+                        },
+                        "output":{
+                          "type": "object",
+                          "properties": {
+                            "content": {
+                              "type": "object",
+                              "properties": {
+                                "signed_url_pictures": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "description": "Signed URLs of the generated images"
+                                }
+                              }
+                            },
+                            "message": {
+                              "type": "string",
+                              "enum": ["Success", "Input Error"]
+                            },
+                            "status_code": {
+                              "type": "integer",
+                              "enum": [200, 204]
+                            },
+                            "price_jobs_dollar": {
+                              "type": "number",
+                              "description": "Price of the job in dollars",
+                              "example": 0.00431
+                            },
+                            "gpu_use": {
+                              "type": "string",
+                              "description": "GPU used for the job",
+                              "enum": ["RTX 4090", "RTX 5090"]
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Status of the job",
+                          "enum": ["COMPLETED"]
+                        },
+                        "workerId": {
+                          "type": "string",
+                          "description": "Unique identifier for the worker"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
