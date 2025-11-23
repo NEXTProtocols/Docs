@@ -1062,11 +1062,11 @@
                                         "properties": {
                                             "prompt_style": {
                                                 "type": "array",
-                                                "description": "prompt style of the generation",
+                                                "description": "**indexe** of the prompt style, you can the **indexe** on supabase in the table **prompt_style**",
                                                 "default": [],
-                                                "example": ["PHOTOGRAPHIE — Long Exposure", "PHOTOGRAPHIE — Pro Studio Portrait (Softbox Key)", "ARCHITECTURE & INTERIOR — Sunset Glass Facade"],
+                                                "example": [32, 6],
                                                 "items": {
-                                                    "type": "string"
+                                                    "type": "integer"
                                                 }
                                             },
                                             "prompt": {
