@@ -1071,22 +1071,32 @@
                                             },
                                             "prompt": {
                                                 "type": "string",
-                                                "description": "prompt of the generation"
+                                                "description": "prompt of the generation",
+                                                "default": "generate a beautiful image"
                                             },
                                             "steps": {
                                                 "type": "integer",
                                                 "description": "steps of the generation",
                                                 "minimum": 1,
-                                                "maximum": 100
+                                                "maximum": 100,
+                                                "default": 20
                                             },
                                             "image_ratio": {
                                                 "type": "string",
                                                 "description": "image ratio of the generation",
-                                                "enum": ["1:1", "4:3", "3:2", "16:9", "21:9", "4:5", "2:3", "9:16"]
+                                                "enum": ["1:1", "4:3", "3:2", "16:9", "21:9", "4:5", "2:3", "9:16"],
+                                                "default": "1:1"
                                             },
                                             "batch_size": {
                                                 "type": "integer",
-                                                "description": "number of images to generate"
+                                                "description": "number of images to generate",
+                                                "default": 4
+                                            },
+                                            "quality": {
+                                                "type": "string",
+                                                "description": "quality of the generation. If you want to generate a 1k image, use **1k**. If you want to generate a 2k image, use **2k**. If you want to generate a 4k image, use **4k**.",
+                                                "enum": ["1k", "2k", "4k"],
+                                                "default": "1k"
                                             }
                                         }
                                     }
