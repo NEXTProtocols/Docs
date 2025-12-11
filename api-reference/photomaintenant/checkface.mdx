@@ -1,0 +1,30 @@
+---
+title: 'Check Face'
+openapi: 'POST /photomaintenant/checkface'
+---
+
+<Badge icon="clock" stroke color="green">11 Decembre 2025</Badge>
+<Badge icon="database" stroke color="red">Mock data does not work</Badge>
+
+## Output response
+
+The response is the same as the supabase table `checkface` for simplicity.
+
+<img src="/images/supabase-table-checkface.png" alt="Supabase table checkface"/>
+
+
+## All response for `reason` in the output json.
+
+### For good input picture :
+
+* `Face detected and good size` : All the condition is perfect ( face detected, one face, good size... ). Picture can be use for a training !
+
+### For bad input picture :
+
+* `Image too small width` : Minimun width size for a picture is 100px.
+* `Image too small height` : Minumin height size for a picture is 100px.
+* `No face` : 0 Face detected on the picture, need 1 face.
+* `More than one face` : 2 Face or more found on the picture, need only 1 face.
+* `Bad score` : Only 1 face detected but not really good for a IA training.
+* `Face too small` : Only 1 face detected but too small.
+* `Face too large` : Only 1 face detected but too big.

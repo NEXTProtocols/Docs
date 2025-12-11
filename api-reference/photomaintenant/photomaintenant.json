@@ -1,0 +1,93 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+      "title": "OpenAPI Plant Store",
+      "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+      "license": {
+        "name": "Apache 2.0"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://api.nextprotocol.fr"
+      }
+    ],
+    "components": {
+        "securitySchemes": {
+          "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+          }
+        }
+      },
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "paths": {
+        "/photomaintenant/checkface": {
+            "post": {
+                "description": "Check a face is good for a training lora ai model",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["profile_id", "base64_image"],
+                                "properties": {
+                                    "profile_id": {
+                                        "type": "string",
+                                        "description": "uuid of the photomaintenant profile of the user."
+                                    },
+                                    "base64_image": {
+                                        "type": "string",
+                                        "description": "Base64 encoded image of the face of the user."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Face is good for a training lora ai model",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "project_id": {
+                                            "type": "string",
+                                            "description": "uuid of the project of the user."
+                                        },
+                                        "is_good": {
+                                            "type": "boolean",
+                                            "description": "If the face is good for a training lora ai model."
+                                        },
+                                        "reason": {
+                                            "type": "string",
+                                            "description": "Reason for the check",
+                                            "enum": ["Face detected and good size", "Image too small width", "Image too small height", "No face", "More than one face", "Bad score", "Face too small", "Face too large"]
+                                        },
+                                        "original_picture_url": {
+                                            "type": "string",
+                                            "description": "Url of the original picture of the user in format JPEG."
+                                        },
+                                        "checked_picture_url": {
+                                            "type": "string",
+                                            "description": "Url of the checked picture of the user in format JPEG."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }  
+    }
+}

@@ -8,7 +8,7 @@
     "dark": "#009689"
   },
   "banner": {
-    "content": "Last change : 23 Novembre 2025",
+    "content": "Last change : 11 Decembre 2025",
     "dismissible": true
   },
   "favicon": "/favicon.ico",
@@ -42,6 +42,13 @@
               "pages": [
                 "api-reference/mocking-data"
               ]
+          },
+          {
+            "group": "Photomaintenant",
+            "icon": "camera",
+            "pages": [
+              "api-reference/photomaintenant/checkface"
+            ]
           },
           { 
             "group": "NEXT Protocol",
