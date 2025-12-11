@@ -60,9 +60,9 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "project_id": {
+                                        "profile_id": {
                                             "type": "string",
-                                            "description": "uuid of the project of the user."
+                                            "description": "uuid of the photomaintenant profile of the user."
                                         },
                                         "is_good": {
                                             "type": "boolean",
@@ -73,11 +73,11 @@
                                             "description": "Reason for the check",
                                             "enum": ["Face detected and good size", "Image too small width", "Image too small height", "No face", "More than one face", "Bad score", "Face too small", "Face too large"]
                                         },
-                                        "original_picture_url": {
+                                        "original_picture": {
                                             "type": "string",
                                             "description": "Url of the original picture of the user in format JPEG."
                                         },
-                                        "checked_picture_url": {
+                                        "url_crop": {
                                             "type": "string",
                                             "description": "Url of the checked picture of the user in format JPEG."
                                         }
