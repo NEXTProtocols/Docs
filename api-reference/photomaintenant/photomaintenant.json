@@ -10,7 +10,7 @@
     },
     "servers": [
       {
-        "url": "https://api.nextprotocol.fr"
+        "url": "https://checkface.nextprotocol.fr"
       }
     ],
     "components": {
