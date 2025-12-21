@@ -28,7 +28,7 @@
       }
     ],
     "paths": {
-        "/photomaintenant/checkface": {
+        "/checkface": {
             "post": {
                 "description": "Check a face is good for a training lora ai model",
                 "requestBody": {
