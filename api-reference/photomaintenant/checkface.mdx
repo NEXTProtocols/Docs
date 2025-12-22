@@ -11,3 +11,111 @@ openapi: 'POST /checkface'
 The response is the same as the supabase table `checkface` for simplicity.
 
 <img src="/images/supabase-table-checkface.png" alt="Supabase table checkface"/>
+
+## The `reason` field in the JSON response
+
+The `reason` field contains an explanatory message about the analysis result. This message is **always in French** and follows a structured format to make frontend display easier.
+
+### Message format
+
+Each message follows this pattern:
+
+```
+{summary} - {details}
+```
+
+| Part | Description |
+|------|-------------|
+| `summary` | Short message (2-4 words) identifying the issue or success |
+| `-` | Separator allowing you to parse the message |
+| `details` | Full explanation with context or advice for the user |
+
+<Tip>
+Use `reason.split(" - ")` to separate the summary from the details in your frontend code.
+</Tip>
+
+### Parsing example (JavaScript)
+
+```javascript
+const { reason, is_good } = response;
+
+// Split summary from details
+const [summary, details] = reason.split(" - ");
+
+// Conditional display
+if (is_good) {
+  showSuccess(summary);
+} else {
+  showError(summary, details);
+}
+```
+
+---
+
+## All possible cases
+
+### ✅ Success case (`is_good: true`)
+
+| Summary | Details | Description |
+|---------|---------|-------------|
+| `Photo validée` | _(none)_ | The image passed all validations |
+
+### ❌ Failure cases (`is_good: false`)
+
+#### Image-related issues
+
+| Summary | Example details | Cause |
+|---------|-----------------|-------|
+| `Image trop lourde` | `25 Mo, maximum autorisé : 50 Mo` | File > 50 MB |
+| `Image trop petite` | `800x600, minimum requis : 1024x1024` | Dimensions < 1024px |
+
+#### Detection-related issues
+
+| Summary | Example details | Cause |
+|---------|-----------------|-------|
+| `Aucun visage détecté` | `Assurez-vous que votre visage est bien visible` | No face found in the image |
+| `Visage trop petit` | `50x50, rapprochez-vous de l'objectif` | Detected face is too small |
+| `Visage trop grand` | `Éloignez-vous de l'objectif` | Detected face is too large |
+| `Pas assez de personnes` | `Assurez-vous d'être visible sur la photo` | Fewer persons than required |
+| `Trop de personnes` | `Veuillez soumettre une photo avec moins de personnes` | More than 7 persons detected |
+
+#### Technical errors (rare)
+
+| Summary | Example details | Cause |
+|---------|-----------------|-------|
+| `Erreur de chargement` | `{error message}` | Unable to read the image |
+| `Échec du recadrage` | `Obtenu 500x500` | Crop couldn't produce 1024x1024 |
+| `Erreur inconnue` | `Une erreur inattendue s'est produite` | Uncategorized error |
+
+---
+
+## Frontend best practices
+
+<CardGroup cols={2}>
+  <Card title="Display the summary" icon="message">
+    Use the **summary** as the title or main message for the user.
+  </Card>
+  <Card title="Display the details" icon="info">
+    Show the **details** as secondary text or in a tooltip.
+  </Card>
+</CardGroup>
+
+### React implementation example
+
+```tsx
+function CheckFaceResult({ reason, isGood }: { reason: string; isGood: boolean }) {
+  const [summary, details] = reason.split(" - ");
+  
+  return (
+    <div className={isGood ? "success" : "error"}>
+      <h3>{summary}</h3>
+      {details && <p className="details">{details}</p>}
+    </div>
+  );
+}
+```
+
+<Warning>
+The separator ` - ` (with spaces) is guaranteed in all error messages.
+For the success case `Photo validée`, there are no details.
+</Warning>
