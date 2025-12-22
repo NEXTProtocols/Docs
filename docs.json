@@ -47,7 +47,8 @@
             "group": "Photomaintenant",
             "icon": "camera",
             "pages": [
-              "api-reference/photomaintenant/checkface"
+              "api-reference/photomaintenant/checkface",
+              "api-reference/photomaintenant/delete_user"
             ]
           },
           { 
