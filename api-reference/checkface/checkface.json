@@ -94,50 +94,6 @@
                     }
                 }
             }
-        },
-        "/photomaintenant/delete_user": {
-            "servers": [
-                { "url": "https://api.nextprotocol.fr" }
-            ],
-            "delete": {
-                "description": "Delete a user profile from Photomaintenant",
-                "requestBody": {
-                    "description": "Request body",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": ["user_id"],
-                                "properties": {
-                                    "user_id": {
-                                        "type": "string",
-                                        "description": "UUID of the user to delete."
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "User successfully deleted",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "description": "Confirmation message.",
-                                            "example": "User {user_id} workflow launched"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }

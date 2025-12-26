@@ -1,15 +1,18 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "almond",
-  "name": "NEXTProtocol",
+  "theme": "aspen",
+  "name": "C4Rust",
   "colors": {
-    "primary": "#009689",
-    "light": "#00BBA7",
-    "dark": "#009689"
+    "primary": "#CE422B",
+    "light": "#CE422B",
+    "dark": "#CE422B"
   },
   "banner": {
     "content": "Last change : 21 Decembre 2025",
     "dismissible": true
+  },
+  "fonts": {
+    "family": "Nunito Sans"
   },
   "favicon": "/favicon.ico",
   "navigation": {
@@ -29,12 +32,7 @@
               "benchmark/text_to_image",
               "benchmark/training"
             ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
+          },
           {
             "group": "Mocking Data",
             "icon": "database",
@@ -42,50 +40,30 @@
               "pages": [
                 "api-reference/mocking-data"
               ]
-          },
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "groups": [
           {
-            "group": "Photomaintenant",
+            "group": "OVH - CheckFace",
             "icon": "camera",
             "pages": [
-              "api-reference/photomaintenant/checkface",
-              "api-reference/photomaintenant/delete_user"
+              "api-reference/checkface/checkface"
             ]
           },
           { 
-            "group": "NEXT Protocol",
+            "group": "OVH - TechTrash",
             "icon": "server",
             "pages": [
-                "api-reference/nextprotocol/ping",
-                "api-reference/nextprotocol/async_checkface",
+                "api-reference/techtrash/ping",
+                "api-reference/techtrash/delete_user",
                 {
                   "group": "IA Gen",
                   "icon": "computer",
                   "pages": [
-                    "api-reference/nextprotocol/IA Gen/texttoimage"
-                  ]
-                },
-                {
-                  "group": "Generate IA picture",
-                  "icon": "image",
-                  "pages": [
-                    "api-reference/nextprotocol/generationimage/sync_texttoimage",
-                    "api-reference/nextprotocol/generationimage/async_texttoimage"
-                  ]
-                },
-                {
-                  "group": "Upscale",
-                  "icon": "crop",
-                  "pages": [
-                    "api-reference/nextprotocol/upscale/sync_upscale",
-                    "api-reference/nextprotocol/upscale/async_upscale"
-                  ]
-                },
-                {
-                  "group": "Training",
-                  "icon": "brain-circuit",
-                  "pages": [
-                    "api-reference/nextprotocol/training/sync_train",
-                    "api-reference/nextprotocol/training/async_train"
+                    "api-reference/techtrash/IA Gen/texttoimage"
                   ]
                 }
             ]
@@ -97,15 +75,11 @@
               {
                 "group": "CPU",
                 "pages": [
-                  "api-reference/runpod/checkface"
                 ]
               },
               {
                 "group": "GPU",
                 "pages": [
-                  "api-reference/runpod/upscale",
-                  "api-reference/runpod/texttoimage",
-                  "api-reference/runpod/train",
                   "api-reference/runpod/comfyapi"
                 ]
               }
@@ -117,11 +91,6 @@
     "global": {
       "anchors": [
         {
-          "anchor": "OpenAPI Docs",
-          "href": "https://api.nextprotocol.fr/redoc",
-          "icon": "code"
-        },
-        {
           "anchor": "Portainer",
           "href": "https://portainer.nextprotocol.fr",
           "icon": "server"
@@ -130,6 +99,21 @@
           "anchor": "Temporal",
           "href": "https://temporal.nextprotocol.fr",
           "icon": "database"
+        },
+        {
+          "anchor": "OVHCloud",
+          "href": "https://manager.eu.ovhcloud.com",
+          "icon": "cloud"
+        },
+        {
+          "anchor": "RunPod",
+          "href": "https://console.runpod.io",
+          "icon": "computer"
+        },
+        {
+          "anchor": "Vercel",
+          "href": "https://vercel.com",
+          "icon": "cloud"
         }
       ]
     }
@@ -137,18 +121,14 @@
   "navbar": {
     "links": [
       {
-        "label": "Nginx Proxy Manager",
-        "href": "http://nextprotocol.fr:81/nginx/proxy"
-      },
-      {
-        "label": "Runpod",
-        "href": "https://console.runpod.io/deploy"
+        "label": "ToolsKit",
+        "href": "https://toolskit.nextprotocol.fr/"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "OVH Public Cloud",
-      "href": "https://www.ovh.com/manager/#/public-cloud/pci/projects/aadb80640c92434e8b40f63581592520/instances"
+      "label": "C4Rust",
+      "href": "https://c4-rust-theta.vercel.app/"
     }
   },
   "contextual": {

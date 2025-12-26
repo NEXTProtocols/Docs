@@ -1,0 +1,321 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+      "title": "OpenAPI Plant Store",
+      "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+      "license": {
+        "name": "Apache 2.0"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://api.nextprotocol.fr"
+      }
+    ],
+    "components": {
+        "securitySchemes": {
+          "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+          }
+        }
+      },
+    "security": [
+      {
+        "bearerAuth": []
+      }
+    ],
+    "paths": {
+        "/": {
+            "get": {
+                "description": "Ping the server",
+                "responses": {
+                    "200": {
+                        "description": "Server is running",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Message from the server",
+                                            "example": "Demon slayer is the best anime of all time"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/comfyapi/texttoimage": {
+            "post": {
+                "description": "Generate an image from a text prompt",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "uuid_client": {
+                                        "type": "string",
+                                        "description": "uuid of the supabase id client"
+                                    },
+                                    "session_id": {
+                                        "type": "string",
+                                        "description": "session of the current generation picture"
+                                    },
+                                    "model_id": {
+                                        "type": "string",
+                                        "description": "model id of the model use. For example is **FluxDev** for Flux 1.0 Dev model or **FluxKrea** for Flux 1.0 Krea model or **FluxSchnell** for Flux 1.0 Schnell model"
+                                    },
+                                    "loras": {
+                                        "type": "array",
+                                        "description": "loras to use for the generation",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "lora": {
+                                                    "type": "string",
+                                                    "description": "name of the lora",
+                                                    "example": "Minimal_Portrait_Photography_V1.0"
+                                                },
+                                                "strength": {
+                                                    "type": "number",
+                                                    "description": "strength of the lora",
+                                                    "minimum": 0,
+                                                    "maximum": 2
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "settings": {
+                                        "type": "object",
+                                        "description": "settings of the generation",
+                                        "properties": {
+                                            "prompt_style": {
+                                                "type": "array",
+                                                "description": "**indexe** of the prompt style, you can the **indexe** on supabase in the table **prompt_style**",
+                                                "default": [],
+                                                "example": [32, 6],
+                                                "items": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "prompt": {
+                                                "type": "string",
+                                                "description": "prompt of the generation",
+                                                "default": "generate a beautiful image"
+                                            },
+                                            "steps": {
+                                                "type": "integer",
+                                                "description": "steps of the generation",
+                                                "minimum": 1,
+                                                "maximum": 100,
+                                                "default": 20
+                                            },
+                                            "image_ratio": {
+                                                "type": "string",
+                                                "description": "image ratio of the generation",
+                                                "enum": ["1:1", "4:3", "3:2", "16:9", "21:9", "4:5", "2:3", "9:16"],
+                                                "default": "1:1"
+                                            },
+                                            "batch_size": {
+                                                "type": "integer",
+                                                "description": "number of images to generate",
+                                                "default": 4
+                                            },
+                                            "quality": {
+                                                "type": "string",
+                                                "description": "quality of the generation. If you want to generate a 1k image, use **1k**. If you want to generate a 2k image, use **2k**. If you want to generate a 4k image, use **4k**.",
+                                                "enum": ["1k", "2k", "4k"],
+                                                "default": "1k"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }   
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Image generated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "gpu_use": {
+                                        "type": "string",
+                                        "description": "GPU utilisé pour générer l'image",
+                                        "example": "RTX 5090"
+                                        },
+                                        "history": {
+                                        "type": "integer",
+                                        "description": "Numéro d'historique",
+                                        "example": 0
+                                        },
+                                        "image_ratio": {
+                                        "type": "string", 
+                                        "description": "Ratio de l'image générée",
+                                        "example": "1:1"
+                                        },
+                                        "indexe": {
+                                        "type": "integer",
+                                        "description": "Index de l'opération",
+                                        "example": 50
+                                        },
+                                        "loras": {
+                                        "type": "object",
+                                        "properties": {
+                                            "loras": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            },
+                                            "description": "Liste des LoRAs utilisés"
+                                            }
+                                        }
+                                        },
+                                        "model": {
+                                        "type": "string",
+                                        "description": "Modèle AI utilisé pour la génération",
+                                        "example": "Flux 1.0 Dev"
+                                        },
+                                        "number_picture": {
+                                        "type": "integer", 
+                                        "description": "Nombre d'images générées",
+                                        "example": 4
+                                        },
+                                        "picture": {
+                                        "type": "object",
+                                        "properties": {
+                                            "signed_url_pictures": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "URLs signées des images générées"
+                                            }
+                                        }
+                                        },
+                                        "price": {
+                                        "type": "number",
+                                        "description": "Prix de la génération en dollars",
+                                        "example": 0.120356
+                                        },
+                                        "prompt": {
+                                        "type": "string",
+                                        "description": "Prompt utilisé pour la génération",
+                                        "example": "generate a blue skye"
+                                        },
+                                        "request_finish_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "description": "Timestamp de fin de la requête",
+                                        "example": "2025-09-27T04:27:29.411391"
+                                        },
+                                        "request_made_at": {
+                                        "type": "string", 
+                                        "format": "date-time",
+                                        "description": "Timestamp de début de la requête",
+                                        "example": "2025-09-27T04:26:13.488932"
+                                        },
+                                        "resolution": {
+                                        "type": "string",
+                                        "description": "Résolution de l'image",
+                                        "example": "1:1"
+                                        },
+                                        "session_id": {
+                                        "type": "string",
+                                        "description": "Identifiant unique de la session",
+                                        "example": "c8d2223b-6f45-4a51-b452-7aee9cf4d608"
+                                        },
+                                        "status": {
+                                        "type": "string",
+                                        "description": "Statut de la génération",
+                                        "enum": ["COMPLETED", "PENDING", "FAILED"],
+                                        "example": "COMPLETED"
+                                        },
+                                        "steps": {
+                                        "type": "integer",
+                                        "description": "Nombre d'étapes de génération",
+                                        "example": 20
+                                        },
+                                        "style": {
+                                        "type": "object", 
+                                        "properties": {
+                                            "style": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Styles appliqués à l'image"
+                                            }
+                                        }
+                                        },
+                                        "user_id": {
+                                        "type": "string",
+                                        "description": "Identifiant unique de l'utilisateur",
+                                        "example": "03202cd6-349d-461a-87d5-68cce978f279"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }  
+            }
+        },
+        "/photomaintenant/delete_user": {
+            "servers": [
+                { "url": "https://api.nextprotocol.fr" }
+            ],
+            "delete": {
+                "description": "Delete a user profile from Photomaintenant",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["user_id"],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "string",
+                                        "description": "UUID of the user to delete."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User successfully deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Confirmation message.",
+                                            "example": "User {user_id} workflow launched"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
