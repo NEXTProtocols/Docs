@@ -1,0 +1,165 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API Email PhotoMaintenant",
+    "description": "API pour l'envoi d'emails transactionnels (notifications de génération, etc.)",
+    "license": {
+      "name": "Apache 2.0"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://photomaintenant-scrap.vercel.app"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/send": {
+      "post": {
+        "description": "Envoyer un email transactionnel à un utilisateur",
+        "requestBody": {
+          "description": "Paramètres de l'email à envoyer",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type", "email"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Type d'email à envoyer",
+                    "enum": ["generation_complete"],
+                    "example": "generation_complete"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Adresse email du destinataire",
+                    "example": "user@example.com"
+                  },
+                  "data": {
+                    "type": "object",
+                    "description": "Données spécifiques au type d'email",
+                    "properties": {
+                      "userFirstname": {
+                        "type": "string",
+                        "description": "Prénom de l'utilisateur",
+                        "example": "Jean"
+                      },
+                      "resultLink": {
+                        "type": "string",
+                        "description": "Lien vers les résultats de génération",
+                        "example": "https://photomaintenant.fr/results/abc123"
+                      },
+                      "profileId": {
+                        "type": "string",
+                        "description": "Identifiant du profil utilisateur",
+                        "example": "profile_123456"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email envoyé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "Indique si l'envoi a réussi",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Données de retour de Resend",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Identifiant unique de l'email envoyé",
+                          "example": "email_abc123xyz"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide - paramètres manquants ou type d'email non supporté",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Message d'erreur",
+                      "example": "Email and type are required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé - Token Bearer manquant ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Message d'erreur d'authentification",
+                      "example": "Unauthorized - Missing or invalid Bearer token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur interne",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Message d'erreur",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
