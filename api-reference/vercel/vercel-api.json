@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "API Email PhotoMaintenant",
-    "description": "API pour l'envoi d'emails transactionnels (notifications de génération, etc.)",
+    "title": "PhotoMaintenant Email API",
+    "description": "API for sending transactional emails (generation notifications, etc.)",
     "license": {
       "name": "Apache 2.0"
     },
@@ -30,9 +30,9 @@
   "paths": {
     "/api/send": {
       "post": {
-        "description": "Envoyer un email transactionnel à un utilisateur",
+        "description": "Send a transactional email to a user",
         "requestBody": {
-          "description": "Paramètres de l'email à envoyer",
+          "description": "Email parameters to send",
           "required": true,
           "content": {
             "application/json": {
@@ -42,34 +42,30 @@
                 "properties": {
                   "type": {
                     "type": "string",
-                    "description": "Type d'email à envoyer",
+                    "description": "Type of email to send",
                     "enum": ["generation_complete"],
                     "example": "generation_complete"
                   },
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "description": "Adresse email du destinataire",
+                    "description": "Recipient email address",
                     "example": "user@example.com"
                   },
                   "data": {
                     "type": "object",
-                    "description": "Données spécifiques au type d'email",
+                    "description": "Data specific to the email type",
                     "properties": {
                       "userFirstname": {
                         "type": "string",
-                        "description": "Prénom de l'utilisateur",
-                        "example": "Jean"
-                      },
-                      "resultLink": {
-                        "type": "string",
-                        "description": "Lien vers les résultats de génération",
-                        "example": "https://photomaintenant.fr/results/abc123"
+                        "description": "User's first name",
+                        "example": "John"
                       },
                       "profileId": {
                         "type": "string",
-                        "description": "Identifiant du profil utilisateur",
-                        "example": "profile_123456"
+                        "format": "uuid",
+                        "description": "UUID of the user's PhotoMaintenant profile",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
                       }
                     }
                   }
@@ -80,7 +76,7 @@
         },
         "responses": {
           "200": {
-            "description": "Email envoyé avec succès",
+            "description": "Email sent successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -88,16 +84,16 @@
                   "properties": {
                     "success": {
                       "type": "boolean",
-                      "description": "Indique si l'envoi a réussi",
+                      "description": "Indicates if the send was successful",
                       "example": true
                     },
                     "data": {
                       "type": "object",
-                      "description": "Données de retour de Resend",
+                      "description": "Response data from Resend",
                       "properties": {
                         "id": {
                           "type": "string",
-                          "description": "Identifiant unique de l'email envoyé",
+                          "description": "Unique identifier of the sent email",
                           "example": "email_abc123xyz"
                         }
                       }
@@ -108,7 +104,7 @@
             }
           },
           "400": {
-            "description": "Requête invalide - paramètres manquants ou type d'email non supporté",
+            "description": "Bad request - missing parameters or unsupported email type",
             "content": {
               "application/json": {
                 "schema": {
@@ -116,7 +112,7 @@
                   "properties": {
                     "error": {
                       "type": "string",
-                      "description": "Message d'erreur",
+                      "description": "Error message",
                       "example": "Email and type are required"
                     }
                   }
@@ -125,7 +121,7 @@
             }
           },
           "401": {
-            "description": "Non autorisé - Token Bearer manquant ou invalide",
+            "description": "Unauthorized - missing or invalid Bearer token",
             "content": {
               "application/json": {
                 "schema": {
@@ -133,7 +129,7 @@
                   "properties": {
                     "error": {
                       "type": "string",
-                      "description": "Message d'erreur d'authentification",
+                      "description": "Authentication error message",
                       "example": "Unauthorized - Missing or invalid Bearer token"
                     }
                   }
@@ -142,7 +138,7 @@
             }
           },
           "500": {
-            "description": "Erreur serveur interne",
+            "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -150,7 +146,7 @@
                   "properties": {
                     "error": {
                       "type": "string",
-                      "description": "Message d'erreur",
+                      "description": "Error message",
                       "example": "Internal Server Error"
                     }
                   }

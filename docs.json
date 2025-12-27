@@ -51,12 +51,8 @@
             "icon": "cloud",
             "pages": [
               
-              {
-                "group": "Email",
-                "pages": [
-                  "api-reference/vercel/email"
-                ]
-              }
+              "api-reference/vercel/email"
+
             ]
           },
           {
