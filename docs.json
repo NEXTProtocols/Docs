@@ -47,6 +47,15 @@
         "tab": "API reference",
         "groups": [
           {
+            "group": "Vercel",
+            "icon": "cloud",
+            "pages": [
+              
+              "api-reference/vercel/email"
+
+            ]
+          },
+          {
             "group": "OVH - CheckFace",
             "icon": "camera",
             "pages": [

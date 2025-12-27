@@ -1,0 +1,161 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PhotoMaintenant Email API",
+    "description": "API for sending transactional emails (generation notifications, etc.)",
+    "license": {
+      "name": "Apache 2.0"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://photomaintenant-scrap.vercel.app"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/send": {
+      "post": {
+        "description": "Send a transactional email to a user",
+        "requestBody": {
+          "description": "Email parameters to send",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type", "email"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Type of email to send",
+                    "enum": ["generation_complete"],
+                    "example": "generation_complete"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Recipient email address",
+                    "example": "user@example.com"
+                  },
+                  "data": {
+                    "type": "object",
+                    "description": "Data specific to the email type",
+                    "properties": {
+                      "userFirstname": {
+                        "type": "string",
+                        "description": "User's first name",
+                        "example": "John"
+                      },
+                      "profileId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID of the user's PhotoMaintenant profile",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "Indicates if the send was successful",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Response data from Resend",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier of the sent email",
+                          "example": "email_abc123xyz"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing parameters or unsupported email type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message",
+                      "example": "Email and type are required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid Bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Authentication error message",
+                      "example": "Unauthorized - Missing or invalid Bearer token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
