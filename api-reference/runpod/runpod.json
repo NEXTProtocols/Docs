@@ -256,6 +256,136 @@
               }
             }
           }
+        },
+        "/v2/b8s7gkx9lvszte/run": {
+          "post": {
+            "description": "Train a LORA with Musubi",
+            "requestBody": {
+              "description": "Request body",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "required": ["input"],
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "required": ["dataset_toml_content", "images_zip_url", "trigger_word"],
+                        "properties": {
+                          "dataset_toml_content": {
+                            "type": "string",
+                            "description": "Content of the dataset.toml file"
+                          },
+                          "images_zip_url": {
+                            "type": "string",
+                            "description": "URL of the images zip file",
+                            "example": "https://example.com/images.zip"
+                          },
+                          "trigger_word": {
+                            "type": "string",
+                            "description": "Trigger word for the training",
+                            "example": "ohwx woman"
+                          },
+                          "use_pre_cache": {
+                            "type": "boolean",
+                            "description": "Use the pre cache VAE model for the training",
+                            "default": true
+                          },
+                          "convert_for_comfyui": {
+                            "type": "boolean",
+                            "description": "Convert the LORA model for ComfyUI",
+                            "default": true
+                          },
+                          "output_name": {
+                            "type": "string",
+                            "description": "Name of the output model",
+                            "default": "output_lora_model"
+                          },
+                          "max_train_steps": {
+                            "type": "integer",
+                            "description": "Maximum number of training steps",
+                            "default": 2000
+                          },
+                          "seed": {
+                            "type": "integer",
+                            "description": "Seed for the training",
+                            "default": 42
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "delayTime": {
+                          "type": "integer",
+                          "description": "Number of seconds to get a worker to start the job"
+                        },
+                        "executionTime": {
+                          "type": "integer",
+                          "description": "Number of seconds the worker take for terminate the job"
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier for the job"
+                        },
+                        "output":{
+                          "type": "object",
+                          "properties": {
+                            "content": {
+                              "type": "object",
+                              "properties": {
+                                "signed_url_model": {
+                                  "type": "string",
+                                  "description": "Signed URL of the LORA model"
+                                }
+                              }
+                            },
+                            "message": {
+                              "type": "string",
+                              "enum": ["Success", "Input Error"]
+                            },
+                            "status_code": {
+                              "type": "integer",
+                              "enum": [200, 204]
+                            },
+                            "price_jobs_dollar": {
+                              "type": "number",
+                              "description": "Price of the job in dollars",
+                              "example": 0.00431
+                            },
+                            "gpu_use": {
+                              "type": "string",
+                              "description": "GPU used for the job",
+                              "enum": ["RTX 4090", "RTX 5090"]
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Status of the job",
+                          "enum": ["COMPLETED"]
+                        },
+                        "workerId": {
+                          "type": "string",
+                          "description": "Unique identifier for the worker"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
     }
   }

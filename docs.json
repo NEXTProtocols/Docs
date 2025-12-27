@@ -89,7 +89,8 @@
               {
                 "group": "GPU",
                 "pages": [
-                  "api-reference/runpod/comfyapi"
+                  "api-reference/runpod/comfyapi",
+                  "api-reference/runpod/musubitrainingzip"
                 ]
               }
             ]
