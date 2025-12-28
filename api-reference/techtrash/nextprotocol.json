@@ -288,6 +288,11 @@
                                         "type": "string",
                                         "description": "User id (UUID)."
                                     },
+                                    "subject": {
+                                        "type": "string",
+                                        "description": "Subject of the dataset.",
+                                        "example": "Sfya"
+                                    },
                                     "name": {
                                         "type": "string",
                                         "description": "Dataset name."
