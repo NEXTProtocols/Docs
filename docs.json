@@ -74,6 +74,13 @@
                   "pages": [
                     "api-reference/techtrash/IA Gen/texttoimage"
                   ]
+                },
+                {
+                  "group": "Toolskit",
+                  "icon": "virus",
+                  "pages": [
+                    "api-reference/techtrash/Toolskit/dataset"
+                  ]
                 }
             ]
           },

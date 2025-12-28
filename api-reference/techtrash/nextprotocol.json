@@ -273,6 +273,104 @@
                 }  
             }
         },
+        "/toolskit/dataset": {
+            "post": {
+                "description": "Create a training dataset from a list of images + captions. Uploads originals + dataset.zip to S3. Returns only a message.",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["user_id", "name", "gender", "resolution", "dataset_content"],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "string",
+                                        "description": "User id (UUID)."
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Dataset name."
+                                    },
+                                    "gender": {
+                                        "type": "string",
+                                        "description": "Dataset gender.",
+                                        "enum": ["man", "woman"]
+                                    },
+                                    "resolution": {
+                                        "type": "array",
+                                        "description": "Target training resolutions.",
+                                        "example": ["1024x1024", "1600x1024"],
+                                        "items": {
+                                            "type": "string",
+                                            "example": "1024x1024"
+                                        }
+                                    },
+                                    "dataset_content": {
+                                        "type": "array",
+                                        "description": "List of images and captions. picture_base64 can be raw base64 or a data URL (data:image/...;base64,...).",
+                                        "minItems": 1,
+                                        "items": {
+                                            "type": "object",
+                                            "required": ["picture_base64", "caption"],
+                                            "properties": {
+                                                "picture_base64": {
+                                                    "type": "string",
+                                                    "description": "Image as base64 (raw base64 or data URL)."
+                                                },
+                                                "caption": {
+                                                    "type": "string",
+                                                    "description": "Caption text for training."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Dataset created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Confirmation message.",
+                                            "example": "Dataset created"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "type": "string",
+                                            "description": "Error detail.",
+                                            "example": "dataset_content is empty"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/photomaintenant/delete_user": {
             "servers": [
                 { "url": "https://api.nextprotocol.fr" }

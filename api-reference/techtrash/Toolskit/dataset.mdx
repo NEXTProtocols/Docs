@@ -1,0 +1,16 @@
+---
+title: 'Create Dataset'
+openapi: 'POST /toolskit/dataset'
+tag: NEW
+---
+
+<Badge icon="clock" stroke color="green">28 Decembre 2025</Badge>
+<Badge icon="database" stroke color="red">Mock data does not work</Badge>
+
+Create a training dataset from a list of images + captions.
+
+<Warning>
+This endpoint accepts images as **base64** (raw base64 or a **data URL** like `data:image/png;base64,...`).
+It generates a `dataset.zip` and uploads both the original images and the ZIP to S3.
+The API response only returns a `message`.
+</Warning>
