@@ -282,7 +282,7 @@
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "required": ["user_id", "name", "gender", "resolution", "dataset_content"],
+                                "required": ["user_id", "subject", "name", "gender", "resolution", "dataset_content"],
                                 "properties": {
                                     "user_id": {
                                         "type": "string",
