@@ -97,7 +97,8 @@
                 "group": "GPU",
                 "pages": [
                   "api-reference/runpod/comfyapi",
-                  "api-reference/runpod/musubitrainingzip"
+                  "api-reference/runpod/musubitrainingzip",
+                  "api-reference/runpod/ostristraining"
                 ]
               }
             ]

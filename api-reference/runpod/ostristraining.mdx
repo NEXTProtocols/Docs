@@ -1,0 +1,53 @@
+---
+title: 'Ostrich Training'
+openapi: 'POST /v2/zkzqn0it8wwjsd/run'
+tag: NEW
+---
+
+<Badge icon="clock" stroke color="green">29 December 2025</Badge>
+<Badge icon="database" stroke color="orange">This API cannot be mocked</Badge>
+
+## Sending the YAML (`config_yaml_content`)
+
+The YAML must be sent **as plain text**, inside `input.config_yaml_content`.
+The server does **not** receive a real `.yaml` file. It receives a string.
+
+### Example (JSON string with newlines)
+
+```json
+{
+  "input": {
+    "config_yaml_content": "model: Ostrich-1-6b-fp8\n\nlearning_rate: 0.0001\n\nnum_train_steps: 1000\n"
+  }
+}
+```
+
+Important notes:
+- YAML line breaks must be encoded as **`\n`** inside the JSON string.
+- Keep YAML indentation using **spaces**. The simplest is **2 spaces**.
+- Add a trailing `\n` if possible. Parsers are often more tolerant.
+
+### Variant (if your client supports multi-line strings)
+
+Some clients let you write a multi-line string and automatically handle escaping.
+
+In all cases, **on the wire**, it must be a valid JSON string.
+
+## Common mistakes (avoid these)
+
+- **Sending YAML as a JSON object**: wrong. `config_yaml_content` must be a **string**.
+- **Using TABs in YAML**: wrong. YAML is very sensitive to tabs.
+- **Breaking indentation**: wrong. A single bad indent can invalidate the whole YAML.
+- **Using `\r\n` (Windows) depending on tools**: if you see weird parsing errors, force `\n` only.
+- **Unescaped JSON quotes**: if your YAML contains `"` you must escape it as `\"` inside the JSON string
+  (or use a client that escapes automatically).
+- **Dataset URL not reachable**: the URL must be reachable by the worker (usually public, over `https`).
+- **Sending an empty YAML**: wrong. Send the full config expected by the training.
+
+## Quick checklist before calling the API
+
+- **Valid JSON**: the request body parses as JSON.
+- **`config_yaml_content` is a string**: yes.
+- **Valid YAML**: validate it with a local YAML parser if possible.
+- **No tabs**: spaces only.
+- **Zip URL**: downloadable from an external machine.
