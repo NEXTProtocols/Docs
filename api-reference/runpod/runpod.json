@@ -389,7 +389,7 @@
         },
         "/v2/zkzqn0it8wwjsd/run": {
           "post": {
-            "description": "Train a Ostrich model",
+            "description": "Train a Ostris model",
             "requestBody": {
               "description": "Request body",
               "content": {
@@ -416,7 +416,7 @@
                           "config_yaml_content": {
                             "type": "string",
                             "description": "Content of the config.yaml file",
-                            "example": "model: Ostrich-1-6b-fp8\n\nlearning_rate: 0.0001\n\nnum_train_steps: 1000"
+                            "example": "model: Ostris-1-6b-fp8\n\nlearning_rate: 0.0001\n\nnum_train_steps: 1000"
                           },
                           "url_zip_dataset": {
                             "type": "string",
