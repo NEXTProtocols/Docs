@@ -52,6 +52,11 @@
                                     "base64_image": {
                                         "type": "string",
                                         "description": "Base64 encoded image of the face of the user."
+                                    },
+                                    "push_in_supabase": {
+                                        "type": "boolean",
+                                        "description": "If the face should be pushed in the supabase table `checkface`. If false, the face will not be pushed in the supabase table `checkface`.",
+                                        "default": true
                                     }
                                 }
                             }

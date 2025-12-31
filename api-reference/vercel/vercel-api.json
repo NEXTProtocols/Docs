@@ -11,6 +11,9 @@
   "servers": [
     {
       "url": "https://photomaintenant-scrap.vercel.app"
+    },
+    {
+      "url": "https://photomaintenant.fr"
     }
   ],
   "components": {
