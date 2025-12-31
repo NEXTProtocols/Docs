@@ -498,6 +498,104 @@
               }
             }
           }
+        },
+        "/v2/h1zztgha6avhab/run": {
+          "post": {
+            "description": "Train a Ostris model",
+            "requestBody": {
+              "description": "Request body",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "required": ["input"],
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "required": ["id_job", "user_name", "gender", "config_yaml_content", "url_zip_dataset"],
+                        "properties": {
+                          "id_job": {
+                            "type": "string",
+                            "description": "ID of the job in supabase table `toolskit-training-jobs` in `ChatIA` project",
+                            "example": "123"
+                          },
+                          "user_name": {
+                            "type": "string",
+                            "description": "Name of the user",
+                            "example": "John Doe"
+                          },
+                          "gender": {
+                            "type": "string",
+                            "description": "Gender of the user",
+                            "example": "man",
+                            "enum": ["man", "woman"]
+                          },
+                          "config_yaml_content": {
+                            "type": "string",
+                            "description": "Content of the config.yaml file",
+                            "example": "model: Ostris-1-6b-fp8\n\nlearning_rate: 0.0001\n\nnum_train_steps: 1000"
+                          },
+                          "url_zip_dataset": {
+                            "type": "string",
+                            "description": "URL of the zip file of the dataset",
+                            "example": "https://example.com/dataset.zip"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "delayTime": {
+                          "type": "integer",
+                          "description": "Number of seconds to get a worker to start the job"
+                        },
+                        "executionTime": {
+                          "type": "integer",
+                          "description": "Number of seconds the worker take for terminate the job"
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier for the job"
+                        },
+                        "output":{
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "enum": ["Success", "Input Error"]
+                            },
+                            "status_code": {
+                              "type": "integer",
+                              "enum": [200, 204]
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Status of the job",
+                          "enum": ["COMPLETED"]
+                        },
+                        "workerId": {
+                          "type": "string",
+                          "description": "Unique identifier for the worker"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
 }

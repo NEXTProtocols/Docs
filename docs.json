@@ -98,7 +98,8 @@
                 "pages": [
                   "api-reference/runpod/comfyapi",
                   "api-reference/runpod/musubitrainingzip",
-                  "api-reference/runpod/ostristraining"
+                  "api-reference/runpod/ostristraining",
+                  "api-reference/runpod/ostristrainingdev"
                 ]
               }
             ]
