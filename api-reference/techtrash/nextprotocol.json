@@ -419,6 +419,120 @@
                     }
                 }
             }
+        },
+        "/toolskit/cancel_jobs": {
+            "post": {
+                "description": "Cancel a training job",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["id_job"],
+                                "properties": {
+                                    "id_job": {
+                                        "type": "string",
+                                        "description": "ID of the job. It is the id column in the supabase table `toolskit-training-jobs` in the `ChatIA` project.",
+                                        "example": "35"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Job cancelled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Confirmation message.",
+                                            "example": "Jobs cancelled"
+                                        },
+                                        "runpod_job_id": {
+                                            "type": "string",
+                                            "description": "ID of the job on RunPod.",
+                                            "example": "564fbaa2-d7a7-4ff2-aeff-7e6c98842687-e1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/toolskit/training_jobs": {
+            "post": {
+                "description": "Create a training job",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["name"],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Name of the job.",
+                                        "example": "John Doe"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "Description of the job.",
+                                        "example": "Training job for John Doe"
+                                    },
+                                    "mode": {
+                                        "type": "string",
+                                        "description": "Model used for the job.",
+                                        "enum": ["Ostris Al Toolkit"]
+                                    },
+                                    "dataset_id": {
+                                        "type": "string",
+                                        "description": "ID of the dataset.",
+                                        "example": "123"
+                                    },
+                                    "config_yaml_content": {
+                                        "type": "string",
+                                        "description": "Content of the config.yaml file.",
+                                        "example": "model: Ostris-1-6b-fp8\n\nlearning_rate: 0.0001\n\nnum_train_steps: 1000"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Job created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Confirmation message.",
+                                            "example": "Job created"
+                                        },
+                                        "runpod_job_id": {
+                                            "type": "string",
+                                            "description": "ID of the job on RunPod.",
+                                            "example": "564fbaa2-d7a7-4ff2-aeff-7e6c98842687-e1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

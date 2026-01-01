@@ -79,7 +79,9 @@
                   "group": "Toolskit",
                   "icon": "virus",
                   "pages": [
-                    "api-reference/techtrash/Toolskit/dataset"
+                    "api-reference/techtrash/Toolskit/dataset",
+                    "api-reference/techtrash/Toolskit/training_jobs_cancel",
+                    "api-reference/techtrash/Toolskit/training_jobs_create"
                   ]
                 }
             ]
