@@ -217,6 +217,13 @@
                                     "type": "string"
                                   },
                                   "description": "Signed URLs of the generated images"
+                                },
+                                "signed_url_pictures_webp": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "description": "Signed URLs of the generated images in WebP format"
                                 }
                               }
                             },

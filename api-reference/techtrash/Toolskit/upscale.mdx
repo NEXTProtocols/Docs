@@ -1,0 +1,15 @@
+---
+title: 'Upscale'
+openapi: 'POST /toolskit/upscale'
+tag: NEW
+---
+
+<Badge icon="clock" stroke color="green">4 January 2026</Badge>
+<Badge icon="database" stroke color="red">Mock data does not work</Badge>
+
+Upscale an image.
+
+<Warning>
+This endpoint accepts images as **base64** (raw base64 or a **data URL** like `data:image/png;base64,...`).
+The API response returns a `signed_url_pictures_webp` array of signed URLs of the generated images in WebP format.
+</Warning>

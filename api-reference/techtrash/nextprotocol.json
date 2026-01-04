@@ -533,6 +533,76 @@
                     }
                 }
             }
+        },
+        "/toolskit/upscale": {
+            "post": {
+                "description": "Upscale an image",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["image_base64"],
+                                "properties": {
+                                    "image_base64": {
+                                        "type": "string",
+                                        "description": "Image as base64 (raw base64 or data URL).",
+                                        "example": "data:image/png;base64,..."
+                                    },
+                                    "upscale_factor": {
+                                        "type": "number",
+                                        "description": "Upscale factor of the image. For example use 2 for a picture of 1024x1024 to get a picture of 2048x2048",
+                                        "example": 2
+                                    }
+                                }
+                            }
+                        }
+                    }   
+                },
+                "responses": {
+                    "200": {
+                        "description": "Image upscaled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "price_job": {
+                                            "type": "munber",
+                                            "description": "Price of the job in cents"
+                                        },
+                                        "gpu_use": {
+                                            "type": "string",
+                                            "description": "GPU used for the job",
+                                            "example": "RTX 4090"
+                                        },
+                                        "content": {
+                                            "type": "object",
+                                            "properties": {
+                                                "signed_url_pictures": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": "Signed URLs of the generated images"
+                                                },
+                                                "signed_url_pictures_webp": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": "Signed URLs of the generated images in WebP format"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
