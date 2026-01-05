@@ -202,6 +202,13 @@
                                                 "type": "string"
                                             },
                                             "description": "URLs signées des images générées"
+                                            },
+                                            "signed_url_pictures_webp": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "URLs signées des images générées en WebP"
                                             }
                                         }
                                         },
