@@ -610,6 +610,58 @@
                     }
                 }
             }
+        },
+        "/c4rust/enhance_prompt": {
+            "post": {
+                "description": "Enhance a prompt",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["prompt"],
+                                "properties": {
+                                    "id_name": {
+                                        "type": "string",
+                                        "description": "id name of the model use. For example is **FluxDev** for Flux 1.0 Dev model or **FluxKrea** for Flux 1.0 Krea model or **FluxSchnell** for Flux 1.0 Schnell model",
+                                        "example": "FluxDev"
+                                    },
+                                    "user_prompt": {
+                                        "type": "string",
+                                        "description": "User prompt to enhance.",
+                                        "example": "a beautiful image of a cat"
+                                    },
+                                    "instruction_user": {
+                                        "type": "string",
+                                        "description": "Instruction user to enhance the prompt.",
+                                        "example": "make the image more realistic"
+                                    },
+                                    "model_openrouter": {
+                                        "type": "string",
+                                        "description": "Model openrouter to use. For example is **gpt-4o-mini** for GPT-4o Mini model or **gpt-4o** for GPT-4o model or **gpt-4o-turbo** for GPT-4o Turbo model",
+                                        "example": "openai/gpt-5.2"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Prompt enhanced",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Prompt enhanced.",
+                                    "example": "a beautiful image of a cat in a realistic style"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
