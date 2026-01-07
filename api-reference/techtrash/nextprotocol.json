@@ -137,6 +137,25 @@
                                                 "default": "1k"
                                             }
                                         }
+                                    },
+                                    "controlnet": {
+                                        "type": "object",
+                                        "description": "controlnet to use for the generation",
+                                        "properties": {
+                                            "base64_image": {
+                                                "type": "string",
+                                                "description": "base64 image of the controlnet",
+                                                "example": "data:image/png;base64,...",
+                                                "default": null
+                                            },
+                                            "controlnet_strength": {
+                                                "type": "number",
+                                                "description": "strength of the controlnet",
+                                                "minimum": 0,
+                                                "maximum": 1,
+                                                "default": 0
+                                            }
+                                        }
                                     }
                                 }
                             }
