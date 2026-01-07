@@ -681,6 +681,43 @@
                     }
                 }
             }
+        },
+        "/get_public_link": {
+            "post": {
+                "description": "Get a public link for a picture",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["base64_image"],
+                                "properties": {
+                                    "base64_image": {
+                                        "type": "string",
+                                        "description": "Image as base64 (raw base64 or data URL).",
+                                        "example": "data:image/png;base64,..."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Public link",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Public link.",
+                                    "example": "https://example.com/picture.png"
+                                }
+                            }
+                        }   
+                    }
+                }
+            }
         }
     }
 }

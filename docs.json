@@ -68,6 +68,7 @@
             "pages": [
                 "api-reference/techtrash/ping",
                 "api-reference/techtrash/delete_user",
+                "api-reference/techtrash/get_public_link",
                 {
                   "group": "IA Gen",
                   "icon": "computer",
