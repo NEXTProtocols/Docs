@@ -74,7 +74,8 @@
                   "icon": "computer",
                   "pages": [
                     "api-reference/techtrash/IA Gen/texttoimage",
-                    "api-reference/techtrash/C4Rust/enhance_prompt"
+                    "api-reference/techtrash/C4Rust/enhance_prompt",
+                    "api-reference/techtrash/C4Rust/alt"
                   ]
                 },
                 {

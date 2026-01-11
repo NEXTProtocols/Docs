@@ -630,6 +630,100 @@
                 }
             }
         },
+        "/c4rust/alt": {
+            "post": {
+                "description": "Generate SEO-optimized title and/or alt text for an image using vision AI models.",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["image_base64"],
+                                "properties": {
+                                    "image_base64": {
+                                        "type": "string",
+                                        "description": "The image in base64 format. Supports raw base64 or data URL (data:image/...;base64,...). Formats: JPEG, PNG, GIF, WebP.",
+                                        "example": "data:image/png;base64,..."
+                                    },
+                                    "want_title": {
+                                        "type": "boolean",
+                                        "description": "Whether to generate an SEO title for the image.",
+                                        "default": true
+                                    },
+                                    "want_alt": {
+                                        "type": "boolean",
+                                        "description": "Whether to generate an alt text for the image.",
+                                        "default": true
+                                    },
+                                    "alt_level": {
+                                        "type": "string",
+                                        "description": "Level of detail for the generated text. 'short' for thumbnails (title: 20-40 chars, alt: 40-80 chars), 'standard' for most images (title: 40-60 chars, alt: 80-125 chars), 'detailed' for complex images (title: 50-80 chars, alt: 125-250 chars).",
+                                        "enum": ["short", "standard", "detailed"],
+                                        "default": "standard"
+                                    },
+                                    "language": {
+                                        "type": "string",
+                                        "description": "Language code for the generated text (e.g., 'en', 'fr', 'es').",
+                                        "default": "en",
+                                        "example": "en"
+                                    },
+                                    "model_openrouter": {
+                                        "type": "string",
+                                        "description": "OpenRouter vision model to use for image analysis.",
+                                        "default": "x-ai/grok-4.1-fast",
+                                        "examples": ["x-ai/grok-4.1-fast", "openai/gpt-5.2", "google/gemini-3-flash-preview", "anthropic/claude-opus-4.5"]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Alt text and/or title generated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string",
+                                            "nullable": true,
+                                            "description": "SEO-optimized title for the image. Null if want_title was false.",
+                                            "example": "Golden retriever playing fetch in sunny park"
+                                        },
+                                        "alt": {
+                                            "type": "string",
+                                            "nullable": true,
+                                            "description": "SEO-optimized alt text describing the image content. Null if want_alt was false.",
+                                            "example": "A happy golden retriever dog catching a red frisbee mid-air in a green park on a sunny summer day"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid image format or processing error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "type": "string",
+                                            "description": "Error message describing the issue.",
+                                            "example": "Error processing image. Make sure the image format is supported (JPEG, PNG, GIF, WebP)."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/c4rust/enhance_prompt": {
             "post": {
                 "description": "Enhance a prompt",

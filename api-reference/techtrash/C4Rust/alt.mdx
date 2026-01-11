@@ -1,0 +1,33 @@
+---
+title: 'ALT Image'
+openapi: 'POST /c4rust/alt'
+tag: NEW
+---
+
+<Badge icon="clock" stroke color="green">11 January 2026</Badge>
+<Badge icon="database" stroke color="red">Don't work with mock data</Badge>
+
+## Description
+
+This API generates **SEO-optimized title and alt text** for an image. It uses vision AI models via OpenRouter to analyze the image and produce descriptions.
+
+### Use Cases
+
+- Generate accessible alt text for images
+- Create SEO-friendly titles for images
+- Improve website accessibility and search engine ranking
+
+### Features
+
+- **Flexible output**: Get title only, alt only, or both
+- **3 detail levels**: `short`, `standard`, or `detailed`
+- **Multi-language**: Generate text in any language
+- **Auto-detection**: Supports JPEG, PNG, GIF, and WebP formats
+
+### Detail Levels
+
+| Level | Title Length | Alt Length | Best For |
+|-------|-------------|-----------|----------|
+| `short` | 20-40 chars | 40-80 chars | Thumbnails, icons |
+| `standard` | 40-60 chars | 80-125 chars | Most images |
+| `detailed` | 50-80 chars | 125-250 chars | Complex images, products |
