@@ -724,6 +724,53 @@
                 }
             }
         },
+        "/c4rust/enhance_crawler_prompt": {
+            "post": {
+                "description": "Enhance a web crawler prompt using an LLM model via OpenRouter. Takes a base prompt (e.g., 'find pricing pages') and user instructions (e.g., 'be more specific about what pricing info I need'), then returns an enhanced, clearer prompt for the crawler.",
+                "requestBody": {
+                    "description": "Request body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["user_prompt", "instruction_user", "model_openrouter"],
+                                "properties": {
+                                    "user_prompt": {
+                                        "type": "string",
+                                        "description": "The base prompt describing what pages to crawl (e.g., 'pages that talk about pricing').",
+                                        "example": "pages that talk about pricing"
+                                    },
+                                    "instruction_user": {
+                                        "type": "string",
+                                        "description": "Additional instructions to refine the prompt (e.g., 'add more details', 'be more specific about pricing tables').",
+                                        "example": "be more specific about pricing tables and comparison features"
+                                    },
+                                    "model_openrouter": {
+                                        "type": "string",
+                                        "description": "The OpenRouter model to use for enhancement.",
+                                        "example": "anthropic/claude-3-haiku"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Enhanced crawler prompt",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The enhanced prompt for the crawler.",
+                                    "example": "Find pages that contain detailed pricing information, including pricing tables, subscription tiers, and plan comparison features. Look for pages with URLs containing 'pricing', 'plans', or 'subscription'. The page should display cost breakdowns, feature lists per tier, and any promotional offers or discounts."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/c4rust/enhance_prompt": {
             "post": {
                 "description": "Enhance a prompt",
