@@ -3,5 +3,9 @@ title: 'Get Public Link'
 openapi: 'POST /get_public_link'
 ---
 
-<Badge icon="clock" stroke color="green">8 January 2026</Badge>
+<Badge icon="clock" stroke color="green">18 January 2026</Badge>
 <Badge icon="database" stroke color="red">Don't work with mock data</Badge>
+
+<Note>
+This endpoint now accepts `multipart/form-data` instead of JSON body with base64. This allows uploading large files without base64 encoding overhead.
+</Note>

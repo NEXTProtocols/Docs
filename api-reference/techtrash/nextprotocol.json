@@ -825,19 +825,20 @@
         },
         "/get_public_link": {
             "post": {
-                "description": "Get a public link for a picture",
+                "description": "Upload any file and get a public URL. Accepts multipart/form-data with a 'file' field. Automatically detects file type and extension.",
                 "requestBody": {
-                    "description": "Request body",
+                    "description": "File to upload",
+                    "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "type": "object",
-                                "required": ["base64_image"],
+                                "required": ["file"],
                                 "properties": {
-                                    "base64_image": {
+                                    "file": {
                                         "type": "string",
-                                        "description": "Image as base64 (raw base64 or data URL).",
-                                        "example": "data:image/png;base64,..."
+                                        "format": "binary",
+                                        "description": "The file to upload. Any file type is supported (images, documents, videos, etc.)."
                                     }
                                 }
                             }
@@ -846,16 +847,16 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Public link",
+                        "description": "Public URL of the uploaded file",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "string",
-                                    "description": "Public link.",
-                                    "example": "https://example.com/picture.png"
+                                    "description": "Public URL of the uploaded file.",
+                                    "example": "https://s3.amazonaws.com/bucket/get_public_link/abc123.png"
                                 }
                             }
-                        }   
+                        }
                     }
                 }
             }
