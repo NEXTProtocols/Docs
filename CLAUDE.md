@@ -1,163 +1,136 @@
-# CLAUDE.md - Documentation Integration Bot
+# CLAUDE.md - Documentation Integration
 
-Tu es l'intégrateur automatique de la documentation NEXTProtocol.
+Tu es l'intégrateur de documentation pour NEXTProtocol.
+
+## Workflow d'intégration
+
+```
+1. L'utilisateur copie un fichier doc.{repo-name} dans _sources/
+2. L'utilisateur te signale les modifications
+3. Tu compares avec git diff pour voir les changements
+4. Tu adaptes la documentation globale en conséquence
+```
+
+## Commandes utiles
+
+```bash
+# Voir les fichiers sources modifiés
+git diff --name-only _sources/
+
+# Voir le détail des modifications d'un fichier source
+git diff _sources/doc.{repo-name}
+
+# Voir les modifications non commitées
+git status
+```
 
 ## Structure de la documentation
 
 ```
 ├── docs.json                      # Configuration Mintlify et navigation
-├── CLAUDE.md                      # Ce fichier (instructions d'intégration)
+├── CLAUDE.md                      # Ce fichier
 │
-├── index.mdx                      # Page d'accueil
+├── _sources/                      # Fichiers doc bruts des repos
+│   ├── doc.apiserver              # → api-reference/apiserver/
+│   ├── doc.{sdk-name}             # → sdk/{sdk-name}/
+│   ├── doc.{db-name}              # → database/{db-name}/
+│   └── ...
 │
 ├── api-reference/                 # Tab: API Reference
-│   ├── apiserver/                 # OVH API Server
-│   │   ├── ping.mdx
-│   │   ├── ia-gen/                # Endpoints génération IA
-│   │   ├── c4rust/                # Endpoints C4Rust
-│   │   └── toolskit/              # Endpoints Toolskit
-│   ├── runpod/                    # RunPod GPU workers
-│   ├── vercel/                    # Vercel serverless
-│   └── checkface/                 # CheckFace API
+│   ├── apiserver/
+│   ├── runpod/
+│   ├── vercel/
+│   └── checkface/
 │
 ├── sdk/                           # Tab: SDK
-│   ├── overview.mdx
-│   └── {lib-name}/                # Une librairie Python
-│       ├── installation.mdx
-│       ├── quickstart.mdx
-│       └── reference.mdx
+│   └── {lib-name}/
 │
 ├── database/                      # Tab: Database
-│   ├── overview.mdx
-│   └── {project-name}/            # Un projet Supabase
-│       ├── schema.mdx             # Structure des tables
-│       ├── triggers.mdx           # Triggers et webhooks
-│       └── functions.mdx          # Fonctions PostgreSQL
+│   └── {project-name}/
 │
 ├── apps/                          # Tab: Apps
-│   ├── overview.mdx
-│   └── {app-name}/                # Un site web
-│       ├── overview.mdx
-│       ├── features.mdx
-│       └── deployment.mdx
+│   └── {app-name}/
 │
 ├── infrastructure/                # Tab: Infrastructure
-│   ├── overview.mdx
-│   ├── services/                  # Backend services, listeners
-│   │   └── {service-name}.mdx
-│   └── monitoring/                # Grafana, logs
-│       └── grafana.mdx
+│   ├── services/
+│   └── monitoring/
 │
-├── benchmark/                     # Dans tab Docs
-├── ai-tools/                      # Dans tab Docs
-└── snippets/                      # Composants réutilisables
+├── benchmark/
+├── ai-tools/
+└── snippets/
 ```
 
-## Mapping des sources (repos → dossiers)
+## Mapping sources → destinations
 
-| Repo Source       | Dossier cible                  | Tab         | Description                    |
-|-------------------|--------------------------------|-------------|--------------------------------|
-| APIServer         | `api-reference/apiserver/`     | API Ref     | API principale OVH             |
-| RunPod-Workers    | `api-reference/runpod/`        | API Ref     | Workers GPU                    |
-| {SDK-Name}        | `sdk/{lib-name}/`              | SDK         | Librairie Python               |
-| {Supabase-Name}   | `database/{project-name}/`     | Database    | Projet Supabase                |
-| {App-Name}        | `apps/{app-name}/`             | Apps        | Site web                       |
-| {Service-Name}    | `infrastructure/services/`     | Infra       | Backend service                |
+| Fichier source | Type détecté | Destination |
+|----------------|--------------|-------------|
+| `doc.apiserver` | api | `api-reference/apiserver/` |
+| `doc.{name}-sdk` | sdk | `sdk/{name}/` |
+| `doc.{name}-db` | database | `database/{name}/` |
+| `doc.{name}-app` | app | `apps/{name}/` |
+| `doc.{name}-service` | service | `infrastructure/services/` |
 
-## Règles d'intégration par type
+## Processus d'intégration
 
-### 1. API Reference
-**Source**: Fichiers OpenAPI, specs d'endpoints
-**Cible**: `api-reference/{source}/`
+### 1. Réception d'un nouveau fichier source
+
+Quand l'utilisateur ajoute/modifie un fichier dans `_sources/` :
+
+```bash
+# Voir ce qui a changé
+git diff _sources/doc.{name}
+```
+
+### 2. Analyse du contenu
+
+Identifier le type de documentation :
+- **SDK** : Classes, fonctions, installation pip
+- **API** : Endpoints HTTP, OpenAPI
+- **Database** : Tables, triggers, functions SQL
+- **App** : Features, deployment, stack
+- **Service** : Config, events, workers
+
+### 3. Adaptation
+
+- Créer/mettre à jour les fichiers MDX dans le bon dossier
+- Adapter au format Mintlify (frontmatter, components)
+- Mettre à jour `docs.json` si nouvelles pages
+
+### 4. Mise à jour navigation
+
+Si nouvelles pages ajoutées, modifier `docs.json` :
+```json
+{
+  "group": "...",
+  "pages": [
+    "path/to/new-page"
+  ]
+}
+```
+
+## Format des fichiers MDX
 
 ```mdx
 ---
-title: 'Nom Endpoint'
-openapi: 'METHOD /path'
+title: 'Titre de la page'
+description: 'Description courte'
 ---
 
-<Badge icon="clock" stroke color="green">Date</Badge>
+## Section
+
+Contenu...
+
+<CodeGroup>
+```python Python
+code example
+```
+</CodeGroup>
 ```
 
-### 2. SDK (Python Libraries)
-**Source**: Docstrings, README, examples
-**Cible**: `sdk/{lib-name}/`
+## Conventions
 
-Structure attendue par librairie:
-- `installation.mdx` - pip install, requirements
-- `quickstart.mdx` - Premier exemple fonctionnel
-- `reference.mdx` - API reference complète
-- `examples/` - Exemples avancés (optionnel)
-
-### 3. Database (Supabase)
-**Source**: Schémas SQL, triggers, functions
-**Cible**: `database/{project-name}/`
-
-Structure attendue par projet:
-- `schema.mdx` - Tables, relations, types
-- `triggers.mdx` - Triggers et leurs actions
-- `functions.mdx` - Functions PostgreSQL
-- `policies.mdx` - RLS policies (optionnel)
-
-### 4. Apps (Sites Web)
-**Source**: README, features, architecture
-**Cible**: `apps/{app-name}/`
-
-Structure attendue par app:
-- `overview.mdx` - Description générale
-- `features.mdx` - Fonctionnalités
-- `deployment.mdx` - Déploiement
-
-### 5. Infrastructure (Services)
-**Source**: Docker configs, service descriptions
-**Cible**: `infrastructure/services/`
-
-Un fichier par service avec:
-- Description du service
-- Configuration
-- Endpoints écoutés
-- Logs/Monitoring
-
-## Workflow d'intégration
-
-1. **Recevoir** le contenu dans `.incoming/{source}/`
-2. **Identifier** le type (API, SDK, Database, App, Service)
-3. **Analyser** le contenu reçu
-4. **Adapter** au format MDX et style existant
-5. **Placer** dans le bon dossier selon le mapping
-6. **Mettre à jour** `docs.json` si nouvelles pages
-7. **Nettoyer** `.incoming/` après intégration
-
-## Conventions de nommage
-
-| Type           | Convention                | Exemple                    |
-|----------------|---------------------------|----------------------------|
-| Dossiers       | kebab-case lowercase      | `my-library/`              |
-| Fichiers MDX   | kebab-case lowercase      | `quick-start.mdx`          |
-| Fichiers JSON  | kebab-case lowercase      | `openapi-spec.json`        |
-| Groupes nav    | Title Case                | `Python Libraries`         |
-
-## Icônes recommandées (Font Awesome)
-
-| Type              | Icône                  |
-|-------------------|------------------------|
-| API Server        | `server`               |
-| GPU/Computing     | `microchip`            |
-| Database          | `database`             |
-| Cloud/Vercel      | `cloud`                |
-| AI/Generation     | `wand-magic-sparkles`  |
-| Tools             | `toolbox`              |
-| Camera/Vision     | `camera`               |
-| Python            | `python`               |
-| Web Apps          | `browser`              |
-| Monitoring        | `chart-line`           |
-| Documentation     | `book`                 |
-
-## Style d'écriture
-
-- Vouvoiement en français
-- Titres descriptifs
-- Code blocks avec langage spécifié
-- Liens relatifs entre pages internes
-- Badges pour les dates de mise à jour
-- CardGroup pour les liens de navigation
+- Fichiers : kebab-case (`quick-start.mdx`)
+- Dossiers : kebab-case lowercase
+- Langue : Français avec vouvoiement
+- Code blocks : Toujours spécifier le langage
+- Liens : Relatifs pour les pages internes
