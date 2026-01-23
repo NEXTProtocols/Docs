@@ -1,0 +1,39 @@
+---
+title: 'Database Overview'
+description: 'Documentation des projets Supabase et leurs fonctionnalités'
+---
+
+## Projets Supabase
+
+Cette section documente les 3 projets Supabase utilisés par NEXTProtocol, incluant :
+
+- **Schémas** : Structure des tables et relations
+- **Triggers** : Actions automatiques sur les modifications
+- **Functions** : Fonctions PostgreSQL personnalisées
+- **Listeners** : Services qui réagissent aux changements
+
+<CardGroup cols={2}>
+  <Card title="Schémas" icon="table" href="/database/schemas">
+    Structure des bases de données
+  </Card>
+  <Card title="Triggers" icon="bolt" href="/database/triggers">
+    Actions automatiques et webhooks
+  </Card>
+</CardGroup>
+
+## Architecture
+
+```
+Supabase Project
+    │
+    ├── Tables (schema)
+    │
+    ├── Triggers ──────► VPS Services (listeners)
+    │                         │
+    │                         ▼
+    └── Functions        API Server / Workers
+```
+
+## Prochainement
+
+Les documentations des projets seront ajoutées ici au fur et à mesure.

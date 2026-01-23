@@ -1,14 +1,14 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "aspen",
-  "name": "C4Rust",
+  "name": "NEXTProtocol",
   "colors": {
     "primary": "#CE422B",
     "light": "#CE422B",
     "dark": "#CE422B"
   },
   "banner": {
-    "content": "Last change : 21 Decembre 2025",
+    "content": "Last change: 23 January 2026",
     "dismissible": true
   },
   "fonts": {
@@ -37,9 +37,18 @@
             "group": "Mocking Data",
             "icon": "database",
             "tag": "NEW",
-              "pages": [
-                "api-reference/mocking-data"
-              ]
+            "pages": [
+              "api-reference/mocking-data"
+            ]
+          },
+          {
+            "group": "AI Tools",
+            "icon": "robot",
+            "pages": [
+              "ai-tools/cursor",
+              "ai-tools/claude-code",
+              "ai-tools/windsurf"
+            ]
           }
         ]
       },
@@ -62,38 +71,38 @@
               "api-reference/checkface/checkface"
             ]
           },
-          { 
-            "group": "OVH - TechTrash",
+          {
+            "group": "OVH - API Server",
             "icon": "server",
             "pages": [
-                "api-reference/techtrash/ping",
-                "api-reference/techtrash/delete_user",
-                "api-reference/techtrash/get_public_link",
+                "api-reference/apiserver/ping",
+                "api-reference/apiserver/delete_user",
+                "api-reference/apiserver/get_public_link",
                 {
                   "group": "IA Gen",
-                  "icon": "computer",
+                  "icon": "wand-magic-sparkles",
                   "pages": [
-                    "api-reference/techtrash/IA Gen/texttoimage",
-                    "api-reference/techtrash/C4Rust/enhance_prompt",
-                    "api-reference/techtrash/C4Rust/enhance_crawler_prompt",
-                    "api-reference/techtrash/C4Rust/alt"
+                    "api-reference/apiserver/ia-gen/texttoimage",
+                    "api-reference/apiserver/c4rust/enhance_prompt",
+                    "api-reference/apiserver/c4rust/enhance_crawler_prompt",
+                    "api-reference/apiserver/c4rust/alt"
                   ]
                 },
                 {
                   "group": "Toolskit",
-                  "icon": "virus",
+                  "icon": "toolbox",
                   "pages": [
-                    "api-reference/techtrash/Toolskit/dataset",
-                    "api-reference/techtrash/Toolskit/training_jobs_cancel",
-                    "api-reference/techtrash/Toolskit/training_jobs_create",
-                    "api-reference/techtrash/Toolskit/upscale"
+                    "api-reference/apiserver/toolskit/dataset",
+                    "api-reference/apiserver/toolskit/training_jobs_cancel",
+                    "api-reference/apiserver/toolskit/training_jobs_create",
+                    "api-reference/apiserver/toolskit/upscale"
                   ]
                 }
             ]
           },
           {
             "group": "RUNPOD",
-            "icon": "computer",
+            "icon": "microchip",
             "pages": [
               {
                 "group": "CPU",
@@ -109,6 +118,54 @@
                   "api-reference/runpod/ostristrainingdev"
                 ]
               }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "SDK",
+        "groups": [
+          {
+            "group": "Python Libraries",
+            "icon": "python",
+            "pages": [
+              "sdk/overview"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Database",
+        "groups": [
+          {
+            "group": "Supabase",
+            "icon": "database",
+            "pages": [
+              "database/overview"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Apps",
+        "groups": [
+          {
+            "group": "Web Applications",
+            "icon": "browser",
+            "pages": [
+              "apps/overview"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Infrastructure",
+        "groups": [
+          {
+            "group": "VPS & Services",
+            "icon": "server",
+            "pages": [
+              "infrastructure/overview"
             ]
           }
         ]

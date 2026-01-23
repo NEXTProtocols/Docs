@@ -1,0 +1,56 @@
+---
+title: 'Infrastructure Overview'
+description: 'Documentation des VPS, services et monitoring NEXTProtocol'
+---
+
+## Architecture Infrastructure
+
+Vue d'ensemble des services déployés sur les VPS NEXTProtocol.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                         VPS                              │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
+│   │  API Server │  │  Listeners  │  │   Grafana   │    │
+│   │   (Backend) │  │  (Workers)  │  │ (Monitoring)│    │
+│   └─────────────┘  └─────────────┘  └─────────────┘    │
+│          │                │                │            │
+│          ▼                ▼                ▼            │
+│   ┌─────────────────────────────────────────────┐      │
+│   │              Supabase (External)             │      │
+│   └─────────────────────────────────────────────┘      │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+<CardGroup cols={2}>
+  <Card title="Services" icon="server" href="/infrastructure/services">
+    Backend, listeners et workers
+  </Card>
+  <Card title="Monitoring" icon="chart-line" href="/infrastructure/monitoring">
+    Grafana et observabilité
+  </Card>
+</CardGroup>
+
+## Liens rapides
+
+<CardGroup cols={4}>
+  <Card title="Portainer" icon="docker" href="https://portainer.nextprotocol.fr">
+    Gestion containers
+  </Card>
+  <Card title="Temporal" icon="clock" href="https://temporal.nextprotocol.fr">
+    Workflows
+  </Card>
+  <Card title="Grafana" icon="chart-line" href="#">
+    Métriques
+  </Card>
+  <Card title="OVHCloud" icon="cloud" href="https://manager.eu.ovhcloud.com">
+    Console OVH
+  </Card>
+</CardGroup>
+
+## Prochainement
+
+Les documentations détaillées des services seront ajoutées ici.
