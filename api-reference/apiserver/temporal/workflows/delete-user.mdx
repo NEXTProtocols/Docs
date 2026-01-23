@@ -1,0 +1,197 @@
+---
+title: 'Delete User Workflow'
+description: 'Temporal workflow for GDPR-compliant user deletion'
+---
+
+## Overview
+
+The Delete User workflow implements a GDPR-compliant user deletion process with a 30-day grace period. Users are first banned, then permanently deleted after the waiting period.
+
+## Workflow Definition
+
+| Property | Value |
+|----------|-------|
+| **Name** | `Delete User` |
+| **Class** | `WFPhotomaintenantDeleteUser` |
+| **File** | `src/temporal/workflows/photomaintenant_delete_user.py` |
+| **Namespace** | `Photomaintenant-Production` |
+| **Task Queue** | `task-queue-photomaintenant` |
+
+## Input
+
+```python
+@dataclass
+class WFPhotomaintenantDeleteUserInput:
+    user_id: str
+```
+
+## Output
+
+```python
+{
+    "message": "User {user_id} deleted",
+    "ban_user_30days": dict,  # Ban activity result
+    "delete_user": dict       # Delete activity result
+}
+```
+
+## Workflow Steps
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Delete User Workflow                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. ban_user_from_app                                        │
+│     └─▶ Immediately bans user from application              │
+│         User cannot log in                                   │
+│         Returns: ban confirmation                            │
+│                                                              │
+│  2. workflow.sleep(30 days)                                  │
+│     └─▶ Durable sleep for 30 days                           │
+│         No compute resources used                            │
+│         Survives server restarts                             │
+│                                                              │
+│  3. delete_user_from_app                                     │
+│     └─▶ Permanently deletes user data                       │
+│         Removes all associated records                       │
+│         Returns: deletion confirmation                       │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Activities
+
+### ban_user_from_app
+
+Bans the user from the application.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 60 seconds |
+
+**Actions:**
+- Sets user account to banned state
+- Invalidates active sessions
+- Prevents new logins
+
+### delete_user_from_app
+
+Permanently deletes all user data.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 60 seconds |
+
+**Actions:**
+- Deletes user profile
+- Removes generated images
+- Clears all associated records
+
+### unban_user_from_app
+
+Restores user access (on cancellation).
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 60 seconds |
+
+**Actions:**
+- Removes ban from user account
+- Restores login capability
+
+## Durable Sleep
+
+The 30-day wait uses Temporal's durable sleep:
+
+```python
+await workflow.sleep(30 * 24 * 60 * 60)  # 30 days in seconds
+```
+
+**Benefits:**
+- No compute resources during sleep
+- Survives worker restarts
+- Survives server restarts
+- Precise timing guaranteed
+
+## Cancellation Handling
+
+```python
+except asyncio.CancelledError:
+    workflow.logger.info(f"Workflow cancelled for user {user_id}, unbanning...")
+    await workflow.execute_activity(
+        "unban_user_from_app",
+        input.user_id,
+        retry_policy=retry_policy,
+        schedule_to_close_timeout=timedelta(seconds=60),
+    )
+    workflow.logger.info(f"User {user_id} successfully unbanned")
+    raise
+```
+
+**Cancellation Flow:**
+1. User requests cancellation via API
+2. Workflow catches `CancelledError`
+3. Unban activity restores user access
+4. Workflow re-raises error
+
+**Note:** Unlike other workflows, this does NOT use a detached scope because unbanning is a required recovery action, not cleanup.
+
+## Timeline
+
+```
+Day 0          Day 30
+  │              │
+  ▼              ▼
+┌────┐        ┌────────┐
+│Ban │───────▶│ Delete │
+└────┘        └────────┘
+  │              │
+  │   Cancel?    │
+  │      │       │
+  │      ▼       │
+  │   ┌──────┐   │
+  └──▶│Unban │   │
+      └──────┘   │
+                 │
+            ┌────▼────┐
+            │ Deleted │
+            └─────────┘
+```
+
+## Search Attributes
+
+| Attribute | Value |
+|-----------|-------|
+| `CustomTextField` | User ID |
+| `Project` | `Photomaintenant` |
+
+## Memo
+
+```python
+{
+    "user_id": user_id,
+    "action": "delete_user_data"
+}
+```
+
+## GDPR Compliance
+
+This workflow supports GDPR "Right to be Forgotten":
+
+| Requirement | Implementation |
+|-------------|----------------|
+| Data deletion | `delete_user_from_app` activity |
+| Grace period | 30-day durable sleep |
+| Reversibility | Cancellation unbans user |
+| Audit trail | Temporal workflow history |
+
+## Error Handling
+
+- Single-attempt retry policy for all activities
+- Cancellation triggers unban before propagating
+- All actions logged via `workflow.logger`
+- Workflow history provides audit trail

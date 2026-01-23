@@ -1,0 +1,172 @@
+---
+title: 'Text to Image'
+description: 'Generate images from text prompts using AI models'
+---
+
+## Endpoint
+
+```
+POST /comfyapi/texttoimage
+```
+
+## Description
+
+Starts a Temporal workflow to generate images from a text prompt using ComfyUI and RunPod GPU inference. The workflow handles the entire generation pipeline including session creation, job submission, polling, and result storage.
+
+## Authentication
+
+Requires Bearer token authentication with the main API token.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `uuid_client` | `string` | Yes | User UUID for tracking |
+| `session_id` | `string` | Yes | Session identifier |
+| `model_id` | `string` | Yes | AI model to use (e.g., `flux-dev`) |
+| `loras` | `array` | Yes | List of LoRA configurations |
+| `settings` | `object` | Yes | Generation settings |
+| `controlnet` | `object` | No | ControlNet configuration |
+
+### Settings Object
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `prompt` | `string` | - | Text prompt for image generation |
+| `steps` | `integer` | - | Number of inference steps |
+| `quality` | `string` | `"standard"` | Quality level |
+| `batch_size` | `integer` | `1` | Number of images to generate |
+| `image_ratio` | `string` | - | Aspect ratio (e.g., `"16:9"`, `"1:1"`) |
+| `seed` | `integer` | `0` | Random seed (0 for random) |
+
+### ControlNet Object
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `base64_image` | `string` | `null` | Base64 encoded control image |
+| `controlnet_strength` | `float` | `0` | Control strength (0.0 - 1.0) |
+
+### LoRA Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lora` | `string` | LoRA model name |
+| `strength` | `float` | LoRA strength (0.0 - 1.0) |
+
+## Example Request
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/comfyapi/texttoimage \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "uuid_client": "550e8400-e29b-41d4-a716-446655440000",
+    "session_id": "660e8400-e29b-41d4-a716-446655440001",
+    "model_id": "flux-dev",
+    "loras": [
+      {
+        "lora": "realistic-vision",
+        "strength": 0.8
+      }
+    ],
+    "settings": {
+      "prompt": "A majestic mountain landscape at sunset, photorealistic",
+      "steps": 25,
+      "quality": "high",
+      "batch_size": 2,
+      "image_ratio": "16:9",
+      "seed": 42
+    },
+    "controlnet": {
+      "base64_image": null,
+      "controlnet_strength": 0
+    }
+  }'
+```
+
+```python python
+import requests
+
+response = requests.post(
+    "http://localhost:8000/comfyapi/texttoimage",
+    headers={
+        "Authorization": "Bearer YOUR_API_TOKEN",
+        "Content-Type": "application/json"
+    },
+    json={
+        "uuid_client": "550e8400-e29b-41d4-a716-446655440000",
+        "session_id": "660e8400-e29b-41d4-a716-446655440001",
+        "model_id": "flux-dev",
+        "loras": [
+            {"lora": "realistic-vision", "strength": 0.8}
+        ],
+        "settings": {
+            "prompt": "A majestic mountain landscape at sunset, photorealistic",
+            "steps": 25,
+            "quality": "high",
+            "batch_size": 2,
+            "image_ratio": "16:9",
+            "seed": 42
+        },
+        "controlnet": {
+            "base64_image": None,
+            "controlnet_strength": 0
+        }
+    }
+)
+print(response.json())
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+```json
+{
+  "details": "Workflow TEXT TO IMAGE for user@example.com is running..."
+}
+```
+
+### Error Response (500)
+
+```json
+{
+  "detail": "Error message describing the failure"
+}
+```
+
+## Workflow Process
+
+1. **Session Creation** - Creates a session record in Supabase
+2. **ControlNet Processing** - Uploads ControlNet image to S3 if provided (avoids Temporal 2MB payload limit)
+3. **Job Submission** - Submits job to RunPod GPU endpoint
+4. **Polling** - Waits for job completion using polling pattern
+5. **Result Storage** - Stores generated images in S3 and updates Supabase
+
+## Temporal Workflow
+
+- **Workflow Name**: `Text to Image`
+- **Workflow ID Format**: `texttoimage-{session_id_short}-{user_id_short}`
+- **Namespace**: `ChatAI-Production`
+- **Task Queue**: `task-queue-production`
+
+## Supported Aspect Ratios
+
+| Ratio | Resolution |
+|-------|------------|
+| `1:1` | 1024 x 1024 |
+| `4:3` | 1152 x 896 |
+| `3:2` | 1216 x 832 |
+| `16:9` | 1344 x 768 |
+| `21:9` | 1536 x 640 |
+| `4:5` | 896 x 1088 |
+| `2:3` | 832 x 1216 |
+| `9:16` | 768 x 1344 |
+
+## Notes
+
+- Large ControlNet images are automatically uploaded to S3 to avoid Temporal's 2MB payload limit
+- Results are stored in the `image_generation` table in Supabase
+- Workflow supports cancellation with automatic cleanup of RunPod jobs

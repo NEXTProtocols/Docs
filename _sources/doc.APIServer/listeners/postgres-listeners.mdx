@@ -1,0 +1,310 @@
+---
+title: 'PostgreSQL Listeners'
+description: 'Event-driven handlers for PostgreSQL NOTIFY events'
+---
+
+## Overview
+
+PostgreSQL listeners receive NOTIFY events from database triggers and route them to appropriate handlers. This enables event-driven processing without polling.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     PostgreSQL Listener                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │                    api_listener.py                   │    │
+│  │                                                      │    │
+│  │  Subscribes to channels:                             │    │
+│  │  - demande_upscale                                   │    │
+│  │  - demande_map_url                                   │    │
+│  │  - demande_crawl_url                                 │    │
+│  │  - demande_klingai_motion                            │    │
+│  │                                                      │    │
+│  │  Routes to handlers:                                 │    │
+│  │  ┌──────────────┐ ┌──────────────┐                   │    │
+│  │  │   upscale    │ │   map_url    │                   │    │
+│  │  │   handler    │ │   handler    │                   │    │
+│  │  └──────────────┘ └──────────────┘                   │    │
+│  │  ┌──────────────┐ ┌──────────────┐                   │    │
+│  │  │    crawl     │ │   klingai    │                   │    │
+│  │  │   handler    │ │   handler    │                   │    │
+│  │  └──────────────┘ └──────────────┘                   │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Main Listener
+
+**File:** `src/listeners/api_listener.py`
+
+### Running the Listener
+
+<CodeGroup>
+```bash Docker
+docker-compose up pqsqlnotif
+```
+
+```bash Local
+cd src && python3 -m listeners.api_listener
+```
+</CodeGroup>
+
+### Connection Flow
+
+```python
+async def main():
+    # Connect to PostgreSQL
+    conn = await asyncpg.connect(settings.supabase_db_dsn)
+
+    # Define callback for all channels
+    async def on_notification(connection, pid, channel, payload):
+        if channel == CHANNEL_UPSCALE:
+            asyncio.create_task(trigger_temporal_workflow(payload))
+        elif channel == CHANNEL_MAP_URL:
+            asyncio.create_task(trigger_map_url(payload))
+        elif channel == CHANNEL_CRAWL_URL:
+            asyncio.create_task(trigger_crawl_url(payload))
+        elif channel == CHANNEL_KLINGAI_MOTION:
+            asyncio.create_task(trigger_klingai_motion(payload))
+
+    # Subscribe to channels
+    await conn.add_listener(CHANNEL_UPSCALE, on_notification)
+    await conn.add_listener(CHANNEL_MAP_URL, on_notification)
+    await conn.add_listener(CHANNEL_CRAWL_URL, on_notification)
+    await conn.add_listener(CHANNEL_KLINGAI_MOTION, on_notification)
+
+    # Keep alive
+    while True:
+        await asyncio.sleep(3600)
+```
+
+## Channels and Handlers
+
+### demande_upscale
+
+Triggers Temporal workflow for image upscaling.
+
+| Property | Value |
+|----------|-------|
+| **Handler** | `trigger_temporal_workflow` |
+| **File** | `src/listeners/handlers/upscale.py` |
+| **Action** | Starts Upscale workflow |
+
+### demande_map_url
+
+Handles URL mapping requests.
+
+| Property | Value |
+|----------|-------|
+| **Handler** | `trigger_map_url` |
+| **File** | `src/listeners/handlers/map_url.py` |
+| **Action** | Maps URLs for processing |
+
+### demande_crawl_url
+
+Triggers web crawling using Firecrawl.
+
+| Property | Value |
+|----------|-------|
+| **Handler** | `trigger_crawl_url` |
+| **File** | `src/listeners/handlers/crawl.py` |
+| **Action** | Crawls website and extracts content |
+
+**Payload:**
+```json
+{
+  "id": 123,
+  "url": "https://example.com",
+  "user_id": "user-uuid",
+  "prompt": "Extract pricing info",
+  "used_proxy": "basic",
+  "used_sitemap": true,
+  "used_full_crawl": true,
+  "number_page": 10,
+  "number_depth": 2
+}
+```
+
+**Processing Steps:**
+1. Parse JSON payload
+2. Update status to `IN_PROGRESS`
+3. Call Firecrawl API
+4. Estimate token count
+5. Generate exports (JSON, Markdown, PDF)
+6. Upload exports to S3
+7. Update status to `COMPLETED` with results
+
+### demande_klingai_motion
+
+Triggers KlingAI video motion generation.
+
+| Property | Value |
+|----------|-------|
+| **Handler** | `trigger_klingai_motion` |
+| **File** | `src/listeners/handlers/klingai_motion.py` |
+| **Action** | Generates video using KlingAI API |
+
+**Payload:**
+```json
+{
+  "indexe": 456,
+  "session_id": "session-uuid",
+  "user_id": "user-uuid",
+  "input_image_url": "https://...",
+  "audio": true,
+  "quality": "high",
+  "number_output": 2,
+  "video_start": "camera zoom in",
+  "video_end": "fade to black"
+}
+```
+
+## Services
+
+### Firecrawl Service
+
+**File:** `src/listeners/services/firecrawl.py`
+
+Handles web crawling:
+
+```python
+def crawl_url(
+    url: str,
+    limit: int = 1,
+    prompt: str = "Extract main content",
+    proxy: str = "basic",
+    ignore_sitemap: bool = False,
+    crawl_entire_domain: bool = True,
+    max_depth: int = 1,
+) -> list[dict]:
+    ...
+```
+
+### Audit Service
+
+**File:** `src/listeners/services/audit.py`
+
+Updates audit status in Supabase:
+
+```python
+def update_audit_status(
+    audit_id: int,
+    status: str,
+    output: list | None = None,
+    export_urls: dict | None = None,
+):
+    ...
+```
+
+### Export Service
+
+**File:** `src/listeners/services/export.py`
+
+Generates and uploads exports:
+
+```python
+def upload_crawl_exports(
+    audit_id: int,
+    results: list[dict],
+    user_id: str | None = None,
+) -> dict[str, str]:
+    # Returns: {"url_json": "...", "url_markdown": "...", "url_pdf": "..."}
+```
+
+### Video Motion Service
+
+**File:** `src/listeners/services/video_motion.py`
+
+Handles KlingAI video generation.
+
+## Utilities
+
+### Logger
+
+**File:** `src/listeners/utils/logger.py`
+
+Structured logging for listeners:
+
+```python
+from listeners.utils import logger
+
+logger.info("CRAWL", "Starting crawl...")
+logger.success("CRAWL", "Crawl completed")
+logger.error("CRAWL", "Crawl failed")
+logger.section_start("CRAWL", "New request")
+logger.section_end("CRAWL")
+```
+
+### Token Estimation
+
+**File:** `src/listeners/utils/tokens.py`
+
+Estimates LLM token usage:
+
+```python
+from listeners.utils.tokens import estimate_tokens_from_crawl_results
+
+token_count = estimate_tokens_from_crawl_results(results)
+```
+
+### URL Utilities
+
+**File:** `src/listeners/utils/url.py`
+
+URL manipulation helpers.
+
+## Error Handling
+
+Handlers implement error handling with status updates:
+
+```python
+async def trigger_crawl_url(payload_json: str):
+    audit_id = None
+    try:
+        data = json.loads(payload_json)
+        audit_id = data.get("id")
+
+        # Process...
+        update_audit_status(audit_id, STATUS_IN_PROGRESS)
+
+        result = await crawl(...)
+
+        update_audit_status(audit_id, STATUS_COMPLETED, output=result)
+
+    except json.JSONDecodeError as e:
+        logger.error("CRAWL", f"Invalid JSON: {e}")
+        # Cannot update status without audit_id
+
+    except Exception as e:
+        logger.error("CRAWL", f"Error: {e}")
+        if audit_id:
+            update_audit_status(audit_id, STATUS_FAILED)
+```
+
+## Status Flow
+
+```
+┌──────────┐     ┌─────────────┐     ┌───────────┐
+│  QUEUE   │────▶│ IN_PROGRESS │────▶│ COMPLETED │
+└──────────┘     └─────────────┘     └───────────┘
+     │                 │
+     │                 │
+     │                 ▼
+     │           ┌───────────┐
+     └──────────▶│  FAILED   │
+                 └───────────┘
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `SUPABASE_DB_DSN` | PostgreSQL connection string |
+| `FIRECRAWL_API_KEY` | Firecrawl API key |
+| `KLING_ACCESS_KEY` | KlingAI access key |
+| `KLING_SECRET_KEY` | KlingAI secret key |
+| `S3_*` | S3 storage credentials |

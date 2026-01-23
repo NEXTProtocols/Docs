@@ -1,0 +1,220 @@
+---
+title: 'Quickstart'
+description: 'Get started with the NEXTProtocol API Server in minutes'
+---
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Docker and Docker Compose installed
+- A configured `.env` file (see [Installation](/api-reference/apiserver/installation))
+- API bearer token for authentication
+
+## Start the Server
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# Or run locally
+make local-api
+```
+
+## Your First API Calls
+
+### 1. Health Check
+
+Verify the server is running:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Response:
+
+```json
+{
+  "status": "healthy"
+}
+```
+
+### 2. Authenticated Request
+
+Test authentication:
+
+<CodeGroup>
+```bash curl
+curl -X GET http://localhost:8000/ \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+```python python
+import requests
+
+response = requests.get(
+    "http://localhost:8000/",
+    headers={"Authorization": "Bearer YOUR_API_TOKEN"}
+)
+print(response.json())
+```
+</CodeGroup>
+
+### 3. Generate an Image
+
+Start a text-to-image generation workflow:
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/comfyapi/texttoimage \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "uuid_client": "user-uuid-here",
+    "session_id": "session-uuid-here",
+    "model_id": "flux-dev",
+    "loras": [],
+    "settings": {
+      "prompt": "A beautiful sunset over mountains",
+      "steps": 20,
+      "quality": "standard",
+      "batch_size": 1,
+      "image_ratio": "16:9"
+    },
+    "controlnet": {
+      "base64_image": null,
+      "controlnet_strength": 0
+    }
+  }'
+```
+
+```python python
+import requests
+
+response = requests.post(
+    "http://localhost:8000/comfyapi/texttoimage",
+    headers={
+        "Authorization": "Bearer YOUR_API_TOKEN",
+        "Content-Type": "application/json"
+    },
+    json={
+        "uuid_client": "user-uuid-here",
+        "session_id": "session-uuid-here",
+        "model_id": "flux-dev",
+        "loras": [],
+        "settings": {
+            "prompt": "A beautiful sunset over mountains",
+            "steps": 20,
+            "quality": "standard",
+            "batch_size": 1,
+            "image_ratio": "16:9"
+        },
+        "controlnet": {
+            "base64_image": None,
+            "controlnet_strength": 0
+        }
+    }
+)
+print(response.json())
+```
+</CodeGroup>
+
+Response:
+
+```json
+{
+  "details": "Workflow TEXT TO IMAGE for user@example.com is running..."
+}
+```
+
+### 4. Upscale an Image
+
+Upscale an existing image:
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/toolskit/upscale \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image_base64": "BASE64_ENCODED_IMAGE",
+    "upscale_factor": 2.0
+  }'
+```
+
+```python python
+import requests
+import base64
+
+# Read and encode image
+with open("image.jpg", "rb") as f:
+    image_base64 = base64.b64encode(f.read()).decode()
+
+response = requests.post(
+    "http://localhost:8000/toolskit/upscale",
+    headers={
+        "Authorization": "Bearer YOUR_API_TOKEN",
+        "Content-Type": "application/json"
+    },
+    json={
+        "image_base64": image_base64,
+        "upscale_factor": 2.0
+    }
+)
+print(response.json())
+```
+</CodeGroup>
+
+Response:
+
+```json
+{
+  "price_job": 0.0025,
+  "gpu_use": "NVIDIA A100",
+  "content": {
+    "signed_url_pictures": ["https://..."],
+    "signed_url_pictures_webp": ["https://..."]
+  }
+}
+```
+
+### 5. Upload a File
+
+Get a public URL for any file:
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/get_public_link \
+  -H "Authorization: Bearer YOUR_PUBLIC_LINK_TOKEN" \
+  -F "file=@image.jpg"
+```
+
+```python python
+import requests
+
+with open("image.jpg", "rb") as f:
+    response = requests.post(
+        "http://localhost:8000/get_public_link",
+        headers={"Authorization": "Bearer YOUR_PUBLIC_LINK_TOKEN"},
+        files={"file": f}
+    )
+print(response.text)  # Returns the public URL
+```
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="code" href="/api-reference/apiserver/authentication">
+    Explore all available endpoints
+  </Card>
+  <Card title="Temporal Workflows" icon="diagram-project" href="/api-reference/apiserver/temporal/architecture">
+    Understand how workflows are orchestrated
+  </Card>
+  <Card title="Database Schema" icon="database" href="/api-reference/apiserver/database/schema">
+    Learn about the data model
+  </Card>
+  <Card title="Configuration" icon="gear" href="/api-reference/apiserver/configuration">
+    Configure environment variables
+  </Card>
+</CardGroup>

@@ -1,0 +1,192 @@
+---
+title: 'Generate Profile Workflow'
+description: 'Temporal workflow for Photomaintenant profile generation'
+---
+
+## Overview
+
+The Generate Profile workflow orchestrates the complete photo generation pipeline for Photomaintenant, including LoRA model training and style-based image generation.
+
+## Workflow Definition
+
+| Property | Value |
+|----------|-------|
+| **Name** | `Generate Profile` |
+| **Class** | `WFPhotomaintenantGenPicture` |
+| **File** | `src/temporal/workflows/photomaintenant_gen_picture.py` |
+| **Namespace** | `Photomaintenant-Production` |
+| **Task Queue** | `task-queue-photomaintenant` |
+
+## Input
+
+```python
+@dataclass
+class WFPhotomaintenantGenPictureInput:
+    profile_id: str
+    user_id: str
+    onboarding_step: int
+    onboarding_is_finish: bool
+    use_case: list[str] | None
+    zip_crop_picture: str | None
+    style_choice: list[dict[str, Any]]
+    formule_id: int
+    created_at: str | None
+    payment_intent_id: str | None
+    url_lora_model: str | None
+```
+
+## Output
+
+```python
+{
+    "styles_create": dict,
+    "child_results": list,
+    "list_style_generate": list,
+    "resolution": str,
+    "clothes_and_background": dict,
+    "url_lora_model": str
+}
+```
+
+## Workflow Steps
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Generate Profile Workflow                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. create_session_supabase_photomaintenant_gen_picture     │
+│     └─▶ Creates style records in Supabase                   │
+│         Returns: resolution, styles, clothes, gender, etc.   │
+│                                                              │
+│  2. generate_zip_crop_picture                                │
+│     └─▶ Generates cropped face images                       │
+│         Uploads ZIP to S3                                    │
+│         Returns: zip_crop_picture URL                        │
+│                                                              │
+│  3. training_lora_model                                      │
+│     └─▶ Trains LoRA model on user's photos                  │
+│         Polls for completion (up to 24 hours)               │
+│         Returns: url_lora_model                              │
+│                                                              │
+│  4. [PARALLEL] Child Workflows (per style)                   │
+│     └─▶ Spawns WFChildrenGenPicture for each style          │
+│         Runs in parallel                                     │
+│         Returns: Generated images per style                  │
+│                                                              │
+│  5. send_email_to_user                                       │
+│     └─▶ Notifies user that photos are ready                 │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Child Workflow: Generate Style
+
+For each style, a child workflow handles the generation:
+
+| Property | Value |
+|----------|-------|
+| **Name** | `Generate Style` |
+| **Class** | `WFChildrenGenPicture` |
+| **ID Pattern** | `gen-style-{profile_id_short}-{index}` |
+
+### Child Workflow Steps
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Generate Style Workflow                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. prepare_data_for_runpod                                  │
+│     └─▶ Prepares ComfyUI workflow with LoRA                 │
+│                                                              │
+│  2. run_jobs_runpod_and_wait_start_generate                 │
+│     └─▶ Starts generation on RunPod                         │
+│         Returns: running_job_id                              │
+│                                                              │
+│  3. get_result_picture                                       │
+│     └─▶ Polls and retrieves generated images                │
+│         Returns: result_picture                              │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Activities
+
+### Main Workflow Activities
+
+| Activity | Timeout | Description |
+|----------|---------|-------------|
+| `create_session_supabase_photomaintenant_gen_picture` | 60s | Create style records |
+| `generate_zip_crop_picture` | 120s | Generate cropped faces |
+| `training_lora_model` | 24 hours | Train LoRA model |
+| `send_email_to_user` | 60s | Send completion email |
+
+### Child Workflow Activities
+
+| Activity | Timeout | Description |
+|----------|---------|-------------|
+| `prepare_data_for_runpod` | 60s | Prepare workflow input |
+| `run_jobs_runpod_and_wait_start_generate` | 1000s | Start generation |
+| `get_result_picture` | 1000s | Retrieve results |
+
+## Parallel Execution
+
+Child workflows run in parallel using `asyncio.gather`:
+
+```python
+handles = []
+for idx, style_generation in enumerate(list_style_generate):
+    child_workflow_id = f"gen-style-{profile_id[:8]}-{idx}"
+    handle = await workflow.start_child_workflow(
+        WFChildrenGenPicture.run,
+        {...},
+        id=child_workflow_id,
+        task_queue=TASK_QUEUE_PHOTOMAINTENANT,
+        memo={...}
+    )
+    handles.append(handle)
+
+# return_exceptions=True: each child is independent
+child_results = await asyncio.gather(*handles, return_exceptions=True)
+```
+
+**Key Points:**
+- Each style generates independently
+- Failures in one style don't affect others
+- Results include exceptions for failed styles
+
+## Search Attributes & Memo
+
+### Parent Workflow
+
+No specific search attributes defined in code.
+
+### Child Workflows
+
+**Memo:**
+```python
+{
+    "style_id": style_id,
+    "profile_id": profile_id,
+    "style_index": idx,
+    "resolution": resolution
+}
+```
+
+## Error Handling
+
+- Individual style failures are captured but don't stop other styles
+- `return_exceptions=True` ensures all children complete
+- LoRA training has 24-hour timeout for long training jobs
+- Email is sent after all styles complete (success or failure)
+
+## Related Tables (Photomaintenant)
+
+| Table | Purpose |
+|-------|---------|
+| `profiles` | User profiles |
+| `generate_styles` | Style configurations |
+| `clothes` | Clothing options |
+| `backgrounds` | Background options |
+| `formules` | Service plans |

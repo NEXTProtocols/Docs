@@ -1,0 +1,315 @@
+---
+title: 'Environment Variables'
+description: 'Complete configuration reference for NEXTProtocol API Server'
+---
+
+## Overview
+
+All configuration is managed via environment variables loaded from `.env` file or system environment. Copy `.env.example` to `.env` and configure the required values.
+
+```bash
+cp .env.example .env
+```
+
+## Configuration Priority
+
+1. System environment variables (highest)
+2. `.env` file values
+3. Default values (lowest)
+
+## Environment
+
+General environment settings.
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `ENVIRONMENT` | `string` | `development` | Environment mode: `development`, `staging`, `production` |
+| `DEBUG` | `boolean` | `false` | Enable debug mode |
+| `LOG_LEVEL` | `string` | `INFO` | Log level: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+
+## Temporal
+
+Temporal workflow engine configuration.
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `TEMPORAL_URL` | `string` | `temporal:7233` | Temporal server address |
+| `TEMPORAL_NAMESPACE_PRODUCTION` | `string` | `ChatAI-Production` | Main production namespace |
+| `TEMPORAL_NAMESPACE_DEVELOPMENT` | `string` | `ChatAI-Development` | Development namespace |
+| `TEMPORAL_NAMESPACE_PHOTOMAINTENANT` | `string` | `Photomaintenant-Production` | Photomaintenant namespace |
+| `TEMPORAL_TASK_QUEUE_PRODUCTION` | `string` | `task-queue-production` | Main production task queue |
+| `TEMPORAL_TASK_QUEUE_DEVELOPMENT` | `string` | `task-queue-development` | Development task queue |
+| `TEMPORAL_TASK_QUEUE_PHOTOMAINTENANT` | `string` | `task-queue-photomaintenant` | Photomaintenant task queue |
+
+## Supabase - Main Instance (C4Rust)
+
+Main Supabase PostgreSQL instance for C4Rust application.
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `SUPABASE_URL` | `string` | Yes | Supabase project URL |
+| `SUPABASE_KEY` | `string` | Yes | Supabase anon/service key |
+| `SUPABASE_DB_DSN` | `string` | Yes | PostgreSQL connection string |
+
+**Example:**
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIs...
+SUPABASE_DB_DSN=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
+```
+
+## Supabase - Photomaintenant Instance
+
+Separate Supabase instance for Photomaintenant application.
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `SUPABASE_PHOTOMAINTENANT_URL` | `string` | Yes | Photomaintenant project URL |
+| `SUPABASE_PHOTOMAINTENANT_KEY` | `string` | Yes | Photomaintenant anon/service key |
+| `SUPABASE_PHOTOMAINTENANT_DB_DSN` | `string` | Yes | Photomaintenant PostgreSQL DSN |
+
+## S3 Storage - Main Bucket (OVH)
+
+Primary S3-compatible storage for generated images.
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `S3_ENDPOINT` | `string` | Yes | S3 endpoint URL |
+| `S3_REGION` | `string` | Yes | S3 region |
+| `S3_BUCKET` | `string` | Yes | Bucket name |
+| `S3_KEY_ID` | `string` | Yes | Access key ID |
+| `S3_SECRET` | `string` | Yes | Secret access key |
+
+**Example (OVH):**
+```bash
+S3_ENDPOINT=https://s3.eu-west-par.io.cloud.ovh.net/
+S3_REGION=eu-west-par
+S3_BUCKET=nextprotocol-main
+S3_KEY_ID=your-key-id
+S3_SECRET=your-secret-key
+```
+
+## S3 Storage - LoRA Bucket (OVH)
+
+Secondary S3 bucket for LoRA models and training data.
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `S3_LORA_ENDPOINT` | `string` | Yes | LoRA S3 endpoint URL |
+| `S3_LORA_REGION` | `string` | Yes | LoRA S3 region |
+| `S3_LORA_BUCKET` | `string` | Yes | LoRA bucket name |
+| `S3_LORA_KEY_ID` | `string` | Yes | LoRA access key ID |
+| `S3_LORA_SECRET` | `string` | Yes | LoRA secret access key |
+
+## RunPod
+
+RunPod serverless GPU configuration.
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `RUNPOD_API_KEY` | `string` | Yes | RunPod API key |
+| `RUNPOD_ENDPOINT_TEXTTOIMAGE` | `string` | Yes | Text to image endpoint ID |
+| `RUNPOD_ENDPOINT_UPSCALE` | `string` | Yes | Upscale endpoint ID |
+| `RUNPOD_ENDPOINT_TRAINING` | `string` | Yes | Training endpoint ID |
+
+**Endpoint IDs are defined in code:**
+```python
+class RunpodEndpoint(StrEnum):
+    TEXT_TO_IMAGE = "m4nkmx48pub66b"
+    UPSCALE = "mzmlfpheelmivs"
+    TRAINING = "mw3zg7346d15vb"
+    CHECK_FACE = "6lieasos6wy1tl"
+    PHOTOMAINTENANT_GEN_PICTURE = "a389zdpmhpy8t4"
+    PHOTOMAINTENANT_TRAINING = "zkzqn0it8wwjsd"
+    TOOLSKIT_TRAINING = "h1zztgha6avhab"
+```
+
+## External APIs
+
+Third-party API credentials.
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `OPENROUTER_API_KEY` | `string` | Yes | OpenRouter API key for LLM access |
+| `FIRECRAWL_API_KEY` | `string` | Yes | Firecrawl API key for web crawling |
+
+## KlingAI
+
+KlingAI video generation API.
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `KLING_ACCESS_KEY` | `string` | Yes | KlingAI access key |
+| `KLING_SECRET_KEY` | `string` | Yes | KlingAI secret key |
+
+## API Authentication
+
+Authentication tokens for API access.
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `API_BEARER_TOKEN` | `string` | Yes | Main API authentication token |
+| `API_PUBLIC_LINK_TOKEN` | `string` | Yes | Public link endpoint token |
+
+**Usage:**
+```bash
+# Main API token
+curl -H "Authorization: Bearer $API_BEARER_TOKEN" http://localhost:8000/
+
+# Public link token
+curl -H "Authorization: Bearer $API_PUBLIC_LINK_TOKEN" \
+  -F "file=@image.jpg" http://localhost:8000/get_public_link
+```
+
+## Server
+
+API server configuration.
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `API_HOST` | `string` | `0.0.0.0` | Server bind address |
+| `API_PORT` | `integer` | `8000` | Server port |
+| `API_WORKERS` | `integer` | `4` | Number of uvicorn workers |
+
+## Example .env File
+
+```bash
+# =============================================================================
+# Environment
+# =============================================================================
+ENVIRONMENT=production
+DEBUG=false
+LOG_LEVEL=INFO
+
+# =============================================================================
+# Temporal
+# =============================================================================
+TEMPORAL_URL=temporal:7233
+TEMPORAL_NAMESPACE_PRODUCTION=ChatAI-Production
+TEMPORAL_NAMESPACE_DEVELOPMENT=ChatAI-Development
+TEMPORAL_NAMESPACE_PHOTOMAINTENANT=Photomaintenant-Production
+TEMPORAL_TASK_QUEUE_PRODUCTION=task-queue-production
+TEMPORAL_TASK_QUEUE_DEVELOPMENT=task-queue-development
+TEMPORAL_TASK_QUEUE_PHOTOMAINTENANT=task-queue-photomaintenant
+
+# =============================================================================
+# Supabase - Main Instance
+# =============================================================================
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-supabase-key
+SUPABASE_DB_DSN=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
+
+# =============================================================================
+# Supabase - Photomaintenant Instance
+# =============================================================================
+SUPABASE_PHOTOMAINTENANT_URL=https://your-photomaintenant.supabase.co
+SUPABASE_PHOTOMAINTENANT_KEY=your-photomaintenant-key
+SUPABASE_PHOTOMAINTENANT_DB_DSN=postgresql://postgres:password@db.your-photomaintenant.supabase.co:5432/postgres
+
+# =============================================================================
+# S3 Storage - Main Bucket
+# =============================================================================
+S3_ENDPOINT=https://s3.eu-west-par.io.cloud.ovh.net/
+S3_REGION=eu-west-par
+S3_BUCKET=your-main-bucket
+S3_KEY_ID=your-key-id
+S3_SECRET=your-secret
+
+# =============================================================================
+# S3 Storage - LoRA Bucket
+# =============================================================================
+S3_LORA_ENDPOINT=https://s3.eu-west-par.io.cloud.ovh.net/
+S3_LORA_REGION=eu-west-par
+S3_LORA_BUCKET=your-lora-bucket
+S3_LORA_KEY_ID=your-lora-key-id
+S3_LORA_SECRET=your-lora-secret
+
+# =============================================================================
+# RunPod
+# =============================================================================
+RUNPOD_API_KEY=your-runpod-api-key
+RUNPOD_ENDPOINT_TEXTTOIMAGE=m4nkmx48pub66b
+RUNPOD_ENDPOINT_UPSCALE=mzmlfpheelmivs
+RUNPOD_ENDPOINT_TRAINING=mw3zg7346d15vb
+
+# =============================================================================
+# External APIs
+# =============================================================================
+OPENROUTER_API_KEY=your-openrouter-key
+FIRECRAWL_API_KEY=your-firecrawl-key
+
+# =============================================================================
+# KlingAI
+# =============================================================================
+KLING_ACCESS_KEY=your-kling-access-key
+KLING_SECRET_KEY=your-kling-secret-key
+
+# =============================================================================
+# API Authentication
+# =============================================================================
+API_BEARER_TOKEN=your-secure-api-token
+API_PUBLIC_LINK_TOKEN=your-public-link-token
+
+# =============================================================================
+# Server
+# =============================================================================
+API_HOST=0.0.0.0
+API_PORT=8000
+API_WORKERS=4
+```
+
+## Validation
+
+Settings are validated on startup using Pydantic:
+
+```python
+from core.settings import settings
+
+# Access settings
+temporal_url = settings.temporal_url
+supabase_url = settings.supabase_url
+
+# Check environment
+if settings.is_production:
+    # Production-specific logic
+    pass
+```
+
+## Troubleshooting
+
+### Missing Required Variables
+
+If a required variable is missing, you'll see an error on startup:
+
+```
+pydantic_settings.errors.SettingsError:
+  SUPABASE_URL: field required
+```
+
+### Invalid Values
+
+Type validation errors appear as:
+
+```
+pydantic.error_wrappers.ValidationError:
+  LOG_LEVEL: value is not a valid enumeration member
+```
+
+### Checking Loaded Settings
+
+Settings are logged on startup (sensitive values are masked):
+
+```
+============================================================
+SETTINGS LOADED
+============================================================
+  Environment:     production
+  Debug:           False
+  Log Level:       INFO
+  Temporal URL:    temporal:7233
+  Supabase URL:    https://your-project.supabase.co...
+  S3 Endpoint:     https://s3.eu-west-par.io.cloud.ovh.net/
+  S3 Bucket:       nextprotocol-main
+  RunPod API Key:  ********...xxxx
+============================================================
+```

@@ -1,0 +1,177 @@
+---
+title: 'Upscale Workflow'
+description: 'Temporal workflow for image upscaling'
+---
+
+## Overview
+
+The Upscale workflow orchestrates image upscaling using RunPod GPU inference. Unlike Text to Image, the Supabase record is created before the workflow starts.
+
+## Workflow Definition
+
+| Property | Value |
+|----------|-------|
+| **Name** | `Upscale` |
+| **Class** | `WFUpscale` |
+| **File** | `src/temporal/workflows/upscale.py` |
+| **Namespace** | `ChatAI-Production` |
+| **Task Queue** | `task-queue-production` |
+
+## Input
+
+```python
+@dataclass
+class WFUpscaleInput:
+    # Required inputs
+    indexe: int              # Supabase record ID
+    session_id: str          # Session identifier
+    user_id: str             # User identifier
+    upscale_model: str       # Upscale model name
+    input_picture_url: str   # URL to input image
+    output_width: int        # Target width
+    output_height: int       # Target height
+    upscale_factor: float    # Upscale multiplier
+
+    # Optional (with defaults)
+    status: str = JobStatus.QUEUED
+    output_picture_url: str | None = None
+    gpu_use: str | None = None
+    price: float | None = None
+    request_made_at: str | None = None
+    request_finish_at: str | None = None
+```
+
+## Output
+
+```python
+dict[str, Any]  # Supabase record from image_upscale table
+```
+
+## Workflow Steps
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Upscale Workflow                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. prepare_input_for_runpod_upscale                        │
+│     └─▶ Fetches ComfyUI workflow configuration              │
+│         Prepares RunPod input payload                        │
+│         Returns: runpod_input                                │
+│                                                              │
+│  2. run_upscale                                              │
+│     └─▶ Starts upscale job on RunPod                        │
+│         Waits for IN_PROGRESS status                        │
+│         Returns: job_id                                      │
+│                                                              │
+│  3. waiting_upscale                                          │
+│     └─▶ Polls RunPod until completion                       │
+│         Updates Supabase with progress                       │
+│         Handles heartbeats                                   │
+│                                                              │
+│  4. fetch_supabase_record                                    │
+│     └─▶ Retrieves final result from database                │
+│         Returns: Complete record with upscaled URLs          │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Activities
+
+### prepare_input_for_runpod_upscale
+
+Prepares the RunPod input by fetching workflow configuration.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 60 seconds |
+
+**Returns:** `runpod_input` dictionary
+
+### run_upscale
+
+Starts the upscale job on RunPod.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 1 hour |
+| Heartbeat | 10 seconds |
+
+**Parameters:**
+- `runpod_input`: Prepared input payload
+- `endpoint_id`: `RunpodEndpoint.UPSCALE`
+- `indexe`: Supabase record ID
+
+**Returns:** `job_id` (string)
+
+### waiting_upscale
+
+Polls RunPod until the upscale job completes.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 3 attempts |
+| Timeout | 1000 seconds |
+| Heartbeat | 10 seconds |
+
+**Input:**
+```python
+PollRunpodInput(
+    job_id=str,
+    endpoint_id=RunpodEndpoint.UPSCALE,
+    supabase_table=TableC4Rust.IMAGE_UPSCALE,
+    supabase_index=int
+)
+```
+
+### fetch_supabase_record
+
+Retrieves the final result from Supabase.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 30 seconds |
+
+**Returns:** Complete Supabase record
+
+## Cancellation Handling
+
+```python
+except asyncio.CancelledError:
+    workflow.logger.info("Upscale workflow cancelled, cleaning up...")
+    async with workflow.new_detached_cancellation_scope():
+        await workflow.execute_activity(
+            "cancel_runpod_job",
+            poll_input,
+            start_to_close_timeout=timedelta(seconds=30),
+        )
+    raise
+```
+
+## Difference from Text to Image
+
+| Aspect | Text to Image | Upscale |
+|--------|---------------|---------|
+| Record Creation | Created by workflow | Created before workflow |
+| Input | Settings and prompt | Image URL and dimensions |
+| Activities | 4 steps | 4 steps |
+| Cancellation | Same pattern | Same pattern |
+
+## Database Table
+
+Results are stored in `image_upscale` table in Supabase.
+
+| Column | Description |
+|--------|-------------|
+| `indexe` | Record ID |
+| `session_id` | Session identifier |
+| `user_id` | User identifier |
+| `status` | Job status |
+| `input_picture_url` | Original image URL |
+| `output_picture_url` | Upscaled image URL |
+| `upscale_factor` | Multiplier used |
+| `gpu_use` | GPU model used |
+| `price` | Job cost |

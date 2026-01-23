@@ -1,0 +1,139 @@
+---
+title: 'Delete User'
+description: 'Initiate user deletion workflow for Photomaintenant'
+---
+
+## Endpoint
+
+```
+DELETE /photomaintenant/delete_user
+```
+
+## Description
+
+Initiates a Temporal workflow to delete a user from the Photomaintenant application. The workflow first bans the user for 30 days, then permanently deletes their data. This allows for a grace period where the deletion can be cancelled.
+
+## Authentication
+
+Requires Bearer token authentication with the main API token.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `user_id` | `string` | Yes | UUID of the user to delete |
+
+## Example Request
+
+<CodeGroup>
+```bash curl
+curl -X DELETE http://localhost:8000/photomaintenant/delete_user \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "550e8400-e29b-41d4-a716-446655440000"
+  }'
+```
+
+```python python
+import requests
+
+response = requests.delete(
+    "http://localhost:8000/photomaintenant/delete_user",
+    headers={
+        "Authorization": "Bearer YOUR_API_TOKEN",
+        "Content-Type": "application/json"
+    },
+    json={
+        "user_id": "550e8400-e29b-41d4-a716-446655440000"
+    }
+)
+print(response.json())
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+```json
+{
+  "message": "Workflow DELETE USER for 550e8400-e29b-41d4-a716-446655440000 is running..."
+}
+```
+
+## Workflow Process
+
+The deletion workflow follows a two-phase process:
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Ban User   │────▶│ Wait 30 Days│────▶│ Delete User │
+│  (Instant)  │     │  (Sleep)    │     │  (Final)    │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+### Phase 1: Ban User
+- Immediately bans the user from the application
+- User cannot log in during the ban period
+- Ban is reversible if workflow is cancelled
+
+### Phase 2: Wait Period
+- Workflow sleeps for 30 days using Temporal's durable sleep
+- No compute resources are used during sleep
+- Provides grace period for user to change their mind
+
+### Phase 3: Delete User
+- Permanently deletes all user data
+- Removes profile, generated images, and associated records
+- Cannot be reversed after this point
+
+## Cancellation Behavior
+
+If the workflow is cancelled during the wait period:
+
+1. User is automatically unbanned
+2. All data is preserved
+3. User can continue using the application
+
+## Temporal Configuration
+
+| Property | Value |
+|----------|-------|
+| Workflow Name | `Delete User` |
+| Workflow ID | `delete-user-{user_id_short}` |
+| Namespace | `Photomaintenant-Production` |
+| Task Queue | `task-queue-photomaintenant` |
+
+## Search Attributes
+
+The workflow is tagged with:
+
+| Attribute | Value |
+|-----------|-------|
+| `CustomTextField` | User ID |
+| `Project` | `Photomaintenant` |
+
+## Memo
+
+The workflow stores:
+
+| Field | Description |
+|-------|-------------|
+| `user_id` | User being deleted |
+| `action` | `delete_user_data` |
+
+## Activities
+
+| Activity | Description |
+|----------|-------------|
+| `ban_user_from_app` | Bans user for 30 days |
+| `delete_user_from_app` | Permanently deletes user |
+| `unban_user_from_app` | Unbans user (on cancellation) |
+
+## Notes
+
+- The 30-day wait is implemented using Temporal's durable sleep
+- Workflow state is persisted - survives server restarts
+- Use the [Cancel Workflow](/api/endpoints/cancel-workflow) endpoint to stop deletion
+- User data in external systems (S3) may need separate cleanup

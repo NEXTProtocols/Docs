@@ -1,0 +1,123 @@
+---
+title: 'Enhance Prompt'
+description: 'Enhance image generation prompts using AI'
+---
+
+## Endpoint
+
+```
+POST /c4rust/enhance_prompt
+```
+
+## Description
+
+Enhances a user's prompt for image generation using an LLM via OpenRouter. The endpoint retrieves example prompts from the database and uses them to guide the enhancement process.
+
+## Authentication
+
+This endpoint does not require authentication.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id_name` | `string` | Yes | Model identifier for retrieving example prompts |
+| `user_prompt` | `string` | Yes | User's original prompt to enhance |
+| `instruction_user` | `string` | Yes | Instructions for enhancement |
+| `model_openrouter` | `string` | Yes | OpenRouter model to use |
+
+## Example Request
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/c4rust/enhance_prompt \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id_name": "flux-dev",
+    "user_prompt": "a cat on a beach",
+    "instruction_user": "Make it more detailed and photorealistic",
+    "model_openrouter": "anthropic/claude-3-sonnet"
+  }'
+```
+
+```python python
+import requests
+
+response = requests.post(
+    "http://localhost:8000/c4rust/enhance_prompt",
+    json={
+        "id_name": "flux-dev",
+        "user_prompt": "a cat on a beach",
+        "instruction_user": "Make it more detailed and photorealistic",
+        "model_openrouter": "anthropic/claude-3-sonnet"
+    }
+)
+print(response.text)  # Returns the enhanced prompt as string
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+Returns the enhanced prompt as a plain text string:
+
+```
+A majestic orange tabby cat lounging on pristine white sand,
+golden sunlight casting long shadows, turquoise ocean waves
+gently lapping in the background, photorealistic style,
+8K resolution, shallow depth of field
+```
+
+### Error Responses
+
+**Model Not Found (500)**
+
+```json
+{
+  "detail": "No examples prompts found for model flux-dev"
+}
+```
+
+## Process Flow
+
+1. **Example Retrieval** - Fetches example prompts from `docker_comfyapi_build` table
+2. **Prompt Construction** - Builds a prompt combining user input with examples
+3. **LLM Enhancement** - Sends to OpenRouter for enhancement
+4. **Result Return** - Returns the enhanced prompt
+
+## LLM Prompt Structure
+
+The endpoint constructs a prompt like:
+
+```
+You are a helpful assistant that enhances prompts for a photo generation model.
+You will only return the enhanced prompt, no other text.
+Return the prompt ALWAYS in English.
+
+Instruction for the user for the enhanced prompt: {instruction_user}
+
+User prompt: {user_prompt}
+(If the user prompt is empty, create a prompt based on the instruction for the user.)
+
+Examples of other prompts:
+1. {example_1}
+2. {example_2}
+...
+```
+
+## Popular OpenRouter Models
+
+| Model | Description |
+|-------|-------------|
+| `anthropic/claude-3-sonnet` | Balanced performance and cost |
+| `anthropic/claude-3-opus` | Highest quality |
+| `openai/gpt-4-turbo` | Fast and capable |
+| `google/gemini-pro` | Google's flagship model |
+
+## Notes
+
+- The response is a plain string, not JSON
+- Examples are retrieved from the model's configuration in Supabase
+- Empty user prompts are supported - the LLM will generate based on instructions
+- The enhanced prompt is always returned in English

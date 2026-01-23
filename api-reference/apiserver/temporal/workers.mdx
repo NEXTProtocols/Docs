@@ -1,0 +1,236 @@
+---
+title: 'Workers'
+description: 'Temporal worker processes for NEXTProtocol'
+---
+
+## Overview
+
+Workers are processes that poll Temporal for tasks and execute workflows/activities. NEXTProtocol has two main workers for different tenants.
+
+## C4Rust Worker
+
+The main worker for the C4Rust application handling image generation and upscaling.
+
+### Configuration
+
+| Property | Value |
+|----------|-------|
+| **File** | `src/temporal/workers/c4rust.py` |
+| **Namespace** | `ChatAI-Production` |
+| **Task Queue** | `task-queue-production` |
+
+### Workflows
+
+| Workflow | Class |
+|----------|-------|
+| Text to Image | `WFTextToImage` |
+| Upscale | `WFUpscale` |
+
+### Activities
+
+| Category | Activities |
+|----------|------------|
+| Text to Image | `create_session_supabase_texttoimage`, `run_texttoimage_sync`, `waiting_for_runpod_texttoimage` |
+| Upscale | `prepare_input_for_runpod_upscale`, `run_upscale`, `waiting_upscale` |
+| Shared | `check_runpod_status`, `fetch_supabase_record`, `cancel_runpod_job` |
+
+### Running the Worker
+
+<CodeGroup>
+```bash Docker
+docker-compose up worker
+```
+
+```bash Local
+cd src && python3 -m temporal.workers.c4rust
+```
+</CodeGroup>
+
+### Code Structure
+
+```python
+async def main():
+    client = await Client.connect(
+        settings.temporal_url, namespace=NAMESPACE_TEMPORAL_PRODUCTION
+    )
+
+    # Instantiate shared activities
+    shared_activities = SharedRunpodActivities()
+
+    worker = Worker(
+        client,
+        task_queue=TASK_QUEUE_PRODUCTION,
+        workflows=[WFTextToImage, WFUpscale],
+        activities=[
+            # TextToImage activities
+            create_session_supabase_texttoimage,
+            run_texttoimage_sync,
+            waiting_for_runpod_texttoimage,
+            # Upscale activities
+            prepare_input_for_runpod_upscale,
+            run_upscale,
+            waiting_upscale,
+            # Shared Activities
+            shared_activities.check_runpod_status,
+            shared_activities.fetch_supabase_record,
+            shared_activities.cancel_runpod_job,
+        ],
+    )
+    await worker.run()
+```
+
+## Photomaintenant Worker
+
+Worker for the Photomaintenant application handling photo generation and user management.
+
+### Configuration
+
+| Property | Value |
+|----------|-------|
+| **File** | `src/temporal/workers/photomaintenant.py` |
+| **Namespace** | `Photomaintenant-Production` |
+| **Task Queue** | `task-queue-photomaintenant` |
+
+### Workflows
+
+| Workflow | Class |
+|----------|-------|
+| Generate Profile | `WFPhotomaintenantGenPicture` |
+| Generate Style | `WFChildrenGenPicture` |
+| Delete User | `WFPhotomaintenantDeleteUser` |
+
+### Activities
+
+| Category | Activities |
+|----------|------------|
+| Generate Picture | `create_session_supabase_photomaintenant_gen_picture`, `prepare_data_for_runpod`, `run_jobs_runpod_and_wait_start_generate`, `get_result_picture`, `generate_zip_crop_picture`, `training_lora_model`, `send_email_to_user` |
+| Delete User | `ban_user_from_app`, `delete_user_from_app`, `unban_user_from_app` |
+
+### Running the Worker
+
+<CodeGroup>
+```bash Docker
+docker-compose up worker-photomaintenant
+```
+
+```bash Local
+cd src && python3 -m temporal.workers.photomaintenant
+```
+</CodeGroup>
+
+### Code Structure
+
+```python
+async def main():
+    client = await Client.connect(
+        settings.temporal_url, namespace=NAMESPACE_TEMPORAL_PHOTOMAINTENANT
+    )
+
+    worker = Worker(
+        client,
+        task_queue=TASK_QUEUE_PHOTOMAINTENANT,
+        workflows=[
+            WFPhotomaintenantGenPicture,
+            WFChildrenGenPicture,
+            WFPhotomaintenantDeleteUser,
+        ],
+        activities=[
+            create_session_supabase_photomaintenant_gen_picture,
+            prepare_data_for_runpod,
+            run_jobs_runpod_and_wait_start_generate,
+            get_result_picture,
+            generate_zip_crop_picture,
+            training_lora_model,
+            ban_user_from_app,
+            delete_user_from_app,
+            unban_user_from_app,
+            send_email_to_user,
+        ],
+    )
+    await worker.run()
+```
+
+## Worker Scaling
+
+### Horizontal Scaling
+
+Multiple worker instances can run for the same task queue:
+
+```bash
+# Scale workers with Docker Compose
+docker-compose up --scale worker=3
+
+# Or run multiple instances
+python3 -m temporal.workers.c4rust &
+python3 -m temporal.workers.c4rust &
+python3 -m temporal.workers.c4rust &
+```
+
+### Task Distribution
+
+Temporal automatically distributes tasks across workers:
+
+```
+┌─────────────┐     ┌─────────────┐
+│   Worker 1  │◀───▶│   Temporal  │
+└─────────────┘     │   Server    │
+                    │             │
+┌─────────────┐     │  Distributes│
+│   Worker 2  │◀───▶│   tasks to  │
+└─────────────┘     │  available  │
+                    │   workers   │
+┌─────────────┐     │             │
+│   Worker 3  │◀───▶│             │
+└─────────────┘     └─────────────┘
+```
+
+## Environment Variables
+
+Workers require these environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `TEMPORAL_URL` | Temporal server address |
+| `TEMPORAL_NAMESPACE_*` | Namespace names |
+| `TEMPORAL_TASK_QUEUE_*` | Task queue names |
+| `SUPABASE_*` | Database credentials |
+| `RUNPOD_*` | RunPod API credentials |
+| `S3_*` | S3 storage credentials |
+
+## Health Monitoring
+
+### Worker Status
+
+Check worker status via Temporal UI or CLI:
+
+```bash
+# List workers
+temporal task-queue list-partition \
+  --namespace ChatAI-Production \
+  --task-queue task-queue-production
+
+# Or use temporal cluster describe
+temporal operator cluster describe
+```
+
+### Logging
+
+Workers output structured JSON logs in production:
+
+```json
+{
+  "timestamp": "2025-01-23T10:30:00Z",
+  "level": "INFO",
+  "message": "Worker started",
+  "namespace": "ChatAI-Production",
+  "task_queue": "task-queue-production"
+}
+```
+
+## Best Practices
+
+1. **Run multiple workers** - For high availability
+2. **Monitor task queues** - Watch for backlogs
+3. **Use resource limits** - Set memory/CPU limits in Docker
+4. **Handle graceful shutdown** - Workers complete current tasks on SIGTERM
+5. **Log activity progress** - Use heartbeats and logging

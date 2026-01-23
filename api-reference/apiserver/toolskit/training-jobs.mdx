@@ -1,0 +1,161 @@
+---
+title: 'Training Jobs'
+description: 'Start LoRA model training jobs on RunPod'
+---
+
+## Endpoint
+
+```
+POST /toolskit/training_jobs
+```
+
+## Description
+
+Creates and starts a LoRA model training job on RunPod. The endpoint creates a job record in Supabase, retrieves the associated dataset, and submits the training job to RunPod for GPU processing.
+
+## Authentication
+
+Requires Bearer token authentication with the main API token.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | `string` | Yes | Training job name |
+| `description` | `string` | Yes | Job description |
+| `mode` | `string` | Yes | Training mode |
+| `dataset_id` | `integer` | Yes | ID of the dataset to use |
+| `config_yaml_content` | `string` | Yes | YAML configuration for training |
+
+## Example Request
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/toolskit/training_jobs \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "portrait_model_v1",
+    "description": "Portrait LoRA model for John Doe",
+    "mode": "lora",
+    "dataset_id": 42,
+    "config_yaml_content": "epochs: 100\nbatch_size: 4\nlearning_rate: 0.0001"
+  }'
+```
+
+```python python
+import requests
+
+config_yaml = """
+epochs: 100
+batch_size: 4
+learning_rate: 0.0001
+save_every_n_epochs: 10
+"""
+
+response = requests.post(
+    "http://localhost:8000/toolskit/training_jobs",
+    headers={
+        "Authorization": "Bearer YOUR_API_TOKEN",
+        "Content-Type": "application/json"
+    },
+    json={
+        "name": "portrait_model_v1",
+        "description": "Portrait LoRA model for John Doe",
+        "mode": "lora",
+        "dataset_id": 42,
+        "config_yaml_content": config_yaml
+    }
+)
+print(response.json())
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+```json
+{
+  "message": "Training job created",
+  "runpod_job_id": "abc123def456"
+}
+```
+
+### Error Responses
+
+**Dataset Not Found (404)**
+
+```json
+{
+  "detail": "Dataset not found"
+}
+```
+
+**Job Creation Failed (500)**
+
+```json
+{
+  "detail": "Training job not created"
+}
+```
+
+**Internal Error (500)**
+
+```json
+{
+  "detail": "Error message"
+}
+```
+
+## Process Flow
+
+1. **Job Creation** - Creates a record in `toolskit-training-jobs` table
+2. **Dataset Fetch** - Retrieves dataset information including ZIP URL
+3. **RunPod Submission** - Submits training job to RunPod endpoint
+4. **Job ID Update** - Updates job record with RunPod job ID
+
+## RunPod Input
+
+The endpoint sends the following to RunPod:
+
+```json
+{
+  "input": {
+    "id_job": "123",
+    "user_name": "portrait_model_v1_123",
+    "gender": "man",
+    "config_yaml_content": "...",
+    "url_zip_dataset": "https://..."
+  }
+}
+```
+
+## Database Tables
+
+### toolskit-training-jobs
+
+| Field | Description |
+|-------|-------------|
+| `id` | Auto-generated job ID |
+| `dataset_id` | Reference to dataset |
+| `name` | Job name |
+| `description` | Job description |
+| `mode` | Training mode |
+| `config_yaml` | YAML configuration |
+| `runpod_jobs_id` | RunPod job identifier |
+| `status` | Job status |
+
+### toolskit-training-dataset
+
+| Field | Description |
+|-------|-------------|
+| `id` | Dataset ID |
+| `gender` | Subject gender |
+| `url_zip_all_pictures` | URL to training data ZIP |
+
+## Notes
+
+- The `user_name` sent to RunPod is formatted as `{name}_{job_id}`
+- Training progress can be monitored via RunPod dashboard
+- Use the [Cancel Jobs](/api-reference/apiserver/toolskit/cancel-jobs) endpoint to stop a running job

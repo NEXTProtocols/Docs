@@ -1,0 +1,129 @@
+---
+title: 'Get Public Link'
+description: 'Upload files and get public URLs'
+---
+
+## Endpoint
+
+```
+POST /get_public_link
+```
+
+## Description
+
+Uploads any file to S3 storage and returns a public URL. The endpoint accepts multipart/form-data with a file field and automatically detects the file type.
+
+## Authentication
+
+Requires Bearer token authentication with the **Public Link Token** (`API_PUBLIC_LINK_TOKEN`).
+
+This endpoint uses a separate token from the main API to allow more controlled access.
+
+## Request
+
+**Content-Type**: `multipart/form-data`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | `file` | Yes | File to upload |
+
+## Example Request
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/get_public_link \
+  -H "Authorization: Bearer YOUR_PUBLIC_LINK_TOKEN" \
+  -F "file=@image.jpg"
+```
+
+```python python
+import requests
+
+with open("image.jpg", "rb") as f:
+    response = requests.post(
+        "http://localhost:8000/get_public_link",
+        headers={"Authorization": "Bearer YOUR_PUBLIC_LINK_TOKEN"},
+        files={"file": ("image.jpg", f, "image/jpeg")}
+    )
+print(response.text)  # Returns the public URL
+```
+
+```javascript javascript
+const formData = new FormData();
+formData.append('file', fileInput.files[0]);
+
+const response = await fetch('http://localhost:8000/get_public_link', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_PUBLIC_LINK_TOKEN'
+  },
+  body: formData
+});
+
+const publicUrl = await response.text();
+console.log(publicUrl);
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+Returns the public URL as a plain text string:
+
+```
+https://s3.eu-west-par.io.cloud.ovh.net/nextprotocol-lora/get_public_link/550e8400-e29b-41d4-a716-446655440000.jpg
+```
+
+### Error Responses
+
+**Unauthorized (401)**
+
+```json
+{
+  "detail": "Invalid or expired token"
+}
+```
+
+## Process Flow
+
+1. **File Upload** - Receives file via multipart form
+2. **Extension Detection** - Uses original filename extension or defaults to `.bin`
+3. **UUID Generation** - Generates unique filename with UUID
+4. **S3 Upload** - Uploads to `get_public_link/` prefix in S3
+5. **URL Return** - Returns the public URL
+
+## S3 Storage Path
+
+Files are stored at:
+
+```
+get_public_link/{uuid}.{extension}
+```
+
+Example: `get_public_link/550e8400-e29b-41d4-a716-446655440000.jpg`
+
+## Supported File Types
+
+Any file type is supported. The extension is preserved from the original filename:
+
+| Original | Stored As |
+|----------|-----------|
+| `photo.jpg` | `{uuid}.jpg` |
+| `document.pdf` | `{uuid}.pdf` |
+| `data.json` | `{uuid}.json` |
+| `archive.zip` | `{uuid}.zip` |
+| (no extension) | `{uuid}.bin` |
+
+## Use Cases
+
+- **Image Hosting** - Upload images for use in prompts
+- **File Sharing** - Get public links to share files
+- **Temporary Storage** - Store files for processing
+
+## Notes
+
+- Files are stored with public read access
+- The URL is permanent and does not expire
+- No file size limit is enforced by the endpoint (server limits may apply)
+- MIME type is not validated - any file can be uploaded

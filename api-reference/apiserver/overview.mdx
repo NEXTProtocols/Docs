@@ -1,0 +1,131 @@
+---
+title: 'NEXTProtocol API Server'
+description: 'A distributed system for AI image generation and processing using FastAPI, Temporal workflows, and RunPod GPU inference.'
+---
+
+## Overview
+
+NEXTProtocol API Server is a production-grade distributed system designed for AI image generation and processing. It orchestrates complex GPU workloads across multiple services while maintaining reliability and scalability.
+
+<CardGroup cols={2}>
+  <Card title="FastAPI" icon="bolt">
+    High-performance REST API handling authentication and request validation
+  </Card>
+  <Card title="Temporal" icon="clock">
+    Durable workflow orchestration with automatic retries and cancellation handling
+  </Card>
+  <Card title="RunPod" icon="gpu-card">
+    Serverless GPU inference for image generation, upscaling, and model training
+  </Card>
+  <Card title="Supabase" icon="database">
+    PostgreSQL database with real-time triggers and event notifications
+  </Card>
+</CardGroup>
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Language | Python 3.12 |
+| Web Framework | FastAPI |
+| Workflow Engine | Temporal |
+| Database | Supabase (PostgreSQL) |
+| Object Storage | OVH S3 |
+| GPU Inference | RunPod Serverless |
+| External APIs | OpenRouter, Firecrawl, KlingAI |
+
+## Architecture
+
+### Request Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Client    │────▶│   FastAPI   │────▶│  Temporal   │────▶│   RunPod    │
+│  (HTTP)     │     │  (Auth)     │     │ (Workflow)  │     │   (GPU)     │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+                           │                   │                   │
+                           │                   │                   │
+                           ▼                   ▼                   ▼
+                    ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+                    │  Supabase   │◀────│  Activities │◀────│   Results   │
+                    │ (Database)  │     │ (Business)  │     │   (S3)      │
+                    └─────────────┘     └─────────────┘     └─────────────┘
+```
+
+1. **FastAPI** receives HTTP requests with Bearer token authentication
+2. Routes validate input and start **Temporal workflows**
+3. **Workflows** orchestrate **Activities** with retry logic and timeouts
+4. Activities call external services (RunPod, Supabase, S3)
+5. Results are stored in Supabase, files uploaded to S3
+
+### Event-Driven Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Database   │────▶│  PostgreSQL │────▶│  Listener   │────▶│  Temporal   │
+│  (Change)   │     │  (NOTIFY)   │     │  (Python)   │     │ (Workflow)  │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+```
+
+1. Database changes trigger **PostgreSQL NOTIFY**
+2. **Listeners** receive events via asyncpg
+3. Listeners start Temporal workflows in response
+
+## Multi-Tenant Structure
+
+The system supports multiple tenants with dedicated resources:
+
+### C4Rust Project (Main)
+
+| Resource | Value |
+|----------|-------|
+| Supabase Instance | Main instance |
+| Temporal Namespace | `ChatAI-Production` |
+| Task Queue | `task-queue-production` |
+| Workflows | Text to Image, Upscale |
+
+### Photomaintenant Project
+
+| Resource | Value |
+|----------|-------|
+| Supabase Instance | Separate instance |
+| Temporal Namespace | `Photomaintenant-Production` |
+| Task Queue | `task-queue-photomaintenant` |
+| Workflows | Generate Profile, Delete User |
+
+## Key Directories
+
+```
+src/
+├── api/                      # FastAPI application
+│   ├── app.py                # Main FastAPI app
+│   ├── dependencies.py       # Auth and request dependencies
+│   └── routers/              # Route handlers organized by domain
+├── temporal/                 # Temporal orchestration
+│   ├── activities/           # Activity implementations (actual work)
+│   ├── workflows/            # Workflow definitions (orchestration logic)
+│   └── workers/              # Worker processes (c4rust, photomaintenant)
+├── listeners/                # PostgreSQL notification listeners
+│   ├── handlers/             # Notification handlers
+│   └── services/             # Services used by handlers
+├── core/                     # Shared infrastructure
+│   ├── settings.py           # Centralized configuration
+│   ├── constants.py          # Enums and constants
+│   └── storage.py            # S3 client
+├── repositories/             # Database access layer
+└── shared/                   # Shared types and models
+```
+
+## Quick Links
+
+<CardGroup cols={3}>
+  <Card title="Installation" icon="download" href="/api-reference/apiserver/installation">
+    Get started with the API server
+  </Card>
+  <Card title="Authentication" icon="code" href="/api-reference/apiserver/authentication">
+    Explore the REST API endpoints
+  </Card>
+  <Card title="Temporal Workflows" icon="diagram-project" href="/api-reference/apiserver/temporal/architecture">
+    Understand workflow orchestration
+  </Card>
+</CardGroup>

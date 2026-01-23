@@ -1,0 +1,251 @@
+---
+title: 'Database Schema'
+description: 'Supabase PostgreSQL database structure'
+---
+
+## Overview
+
+NEXTProtocol uses two Supabase instances with PostgreSQL databases:
+- **Main Instance** - C4Rust application data
+- **Photomaintenant Instance** - Photomaintenant application data
+
+## C4Rust Tables
+
+### image_generation
+
+Stores text-to-image generation sessions and results.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `indexe` | `bigint` | Primary key (auto-generated) |
+| `session_id` | `uuid` | Session identifier |
+| `user_id` | `uuid` | User reference |
+| `status` | `text` | Job status |
+| `model_id` | `text` | AI model used |
+| `prompt` | `text` | Generation prompt |
+| `settings` | `jsonb` | Generation settings |
+| `controlnet` | `jsonb` | ControlNet configuration |
+| `loras` | `jsonb` | LoRA configurations |
+| `output_pictures` | `jsonb` | Generated image URLs |
+| `gpu_use` | `text` | GPU model used |
+| `price` | `numeric` | Job cost |
+| `request_made_at` | `timestamp` | Request timestamp |
+| `request_finish_at` | `timestamp` | Completion timestamp |
+
+### image_upscale
+
+Stores image upscaling sessions and results.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `indexe` | `bigint` | Primary key |
+| `session_id` | `uuid` | Session identifier |
+| `user_id` | `uuid` | User reference |
+| `status` | `text` | Job status |
+| `upscale_model` | `text` | Upscale model used |
+| `input_picture_url` | `text` | Original image URL |
+| `output_picture_url` | `text` | Upscaled image URL |
+| `output_width` | `integer` | Output width |
+| `output_height` | `integer` | Output height |
+| `upscale_factor` | `numeric` | Upscale multiplier |
+| `gpu_use` | `text` | GPU model used |
+| `price` | `numeric` | Job cost |
+| `request_made_at` | `timestamp` | Request timestamp |
+| `request_finish_at` | `timestamp` | Completion timestamp |
+
+### docker_comfyapi_workflow
+
+Stores ComfyUI workflow configurations.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `id_name` | `text` | Workflow identifier |
+| `type_of_generation` | `text` | Generation type |
+| `workflow` | `jsonb` | ComfyUI workflow JSON |
+| `models` | `jsonb` | Required models |
+| `loras` | `jsonb` | Required LoRAs |
+| `settings_scaled_by_gpu_count` | `jsonb` | GPU-scaled settings |
+| `settings_fixed_by_gpu_count` | `jsonb` | Fixed GPU settings |
+
+### docker_comfyapi_build
+
+Stores model configurations and examples.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `id_name` | `text` | Model identifier |
+| `example` | `jsonb` | Example prompts |
+
+### site_paths
+
+Stores website paths for crawling.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `base_url` | `text` | Website base URL |
+| `path` | `text` | Path to crawl |
+| `user_id` | `uuid` | User reference |
+
+### site_audits
+
+Stores crawl audit results.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `site_id` | `bigint` | Reference to site_paths |
+| `user_id` | `uuid` | User reference |
+| `status` | `text` | Crawl status |
+| `prompt` | `text` | Extraction prompt |
+| `used_proxy` | `text` | Proxy type used |
+| `used_sitemap` | `boolean` | Whether sitemap was used |
+| `used_full_crawl` | `boolean` | Full domain crawl |
+| `number_page` | `integer` | Page limit |
+| `number_depth` | `integer` | Depth limit |
+| `output` | `jsonb` | Crawl results |
+| `url_json` | `text` | Exported JSON URL |
+| `url_markdown` | `text` | Exported Markdown URL |
+| `url_pdf` | `text` | Exported PDF URL |
+| `finish_at` | `timestamp` | Completion timestamp |
+
+### video_motion
+
+Stores KlingAI video motion generation.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `indexe` | `bigint` | Primary key |
+| `session_id` | `uuid` | Session identifier |
+| `user_id` | `uuid` | User reference |
+| `status` | `text` | Job status |
+| `status_info` | `text` | Status details |
+| `input_image_url` | `text` | Input image URL |
+| `input_video_url` | `text` | Input video URL |
+| `output_videos_urls` | `jsonb` | Generated video URLs |
+| `audio` | `boolean` | Include audio |
+| `quality` | `text` | Video quality |
+| `number_output` | `bigint` | Number of outputs |
+| `price` | `numeric` | Job cost |
+| `request_made_at` | `timestamp` | Request timestamp |
+| `request_finish_at` | `timestamp` | Completion timestamp |
+| `video_start` | `text` | Start prompt |
+| `video_end` | `text` | End prompt |
+
+### Toolskit Tables
+
+#### toolskit-training-dataset
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `user_id` | `text` | User identifier |
+| `name` | `text` | Dataset name |
+| `gender` | `text` | Subject gender |
+| `subject` | `text` | Dataset subject |
+| `resolution` | `jsonb` | Target resolutions |
+| `url_zip_all_pictures` | `text` | ZIP file URL |
+| `all_pictures` | `jsonb` | Picture URLs and captions |
+
+#### toolskit-training-jobs
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `dataset_id` | `bigint` | Reference to dataset |
+| `name` | `text` | Job name |
+| `description` | `text` | Job description |
+| `mode` | `text` | Training mode |
+| `config_yaml` | `text` | YAML configuration |
+| `runpod_jobs_id` | `text` | RunPod job ID |
+| `status` | `text` | Job status |
+| `start_at` | `timestamp` | Start timestamp |
+| `finish_at` | `timestamp` | Completion timestamp |
+
+## Photomaintenant Tables
+
+### profiles
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `uuid` | Primary key |
+| `user_id` | `uuid` | User reference |
+| `onboarding_step` | `integer` | Onboarding progress |
+| `onboarding_is_finish` | `boolean` | Onboarding complete |
+| `use_case` | `jsonb` | Selected use cases |
+| `style_choice` | `jsonb` | Selected styles |
+| `formule_id` | `integer` | Plan reference |
+| `payment_intent_id` | `text` | Stripe payment ID |
+| `url_lora_model` | `text` | Trained LoRA URL |
+| `created_at` | `timestamp` | Creation timestamp |
+
+### generate_styles
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `profile_id` | `uuid` | Profile reference |
+| `style_id` | `text` | Style identifier |
+| `status` | `text` | Generation status |
+| `output_pictures` | `jsonb` | Generated images |
+
+### users
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `uuid` | Primary key |
+| `email` | `text` | User email |
+| `name` | `text` | Display name |
+| `banned_until` | `timestamp` | Ban expiration |
+
+### characteristics
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `profile_id` | `uuid` | Profile reference |
+| `gender` | `text` | Gender |
+| `name` | `text` | Name |
+
+### formules
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `bigint` | Primary key |
+| `name` | `text` | Plan name |
+| `price` | `numeric` | Price |
+| `styles_count` | `integer` | Included styles |
+
+## Job Status Values
+
+| Status | Description |
+|--------|-------------|
+| `QUEUED` | Waiting in queue |
+| `IN_QUEUE` | RunPod alias for QUEUED |
+| `IN_PROGRESS` | Currently processing |
+| `COMPLETED` | Successfully finished |
+| `FAILED` | Error occurred |
+| `CANCELLED` | User cancelled |
+
+## Relationships
+
+```
+┌─────────────────┐     ┌─────────────────┐
+│     users       │────▶│    profiles     │
+└─────────────────┘     └─────────────────┘
+                               │
+                               ▼
+                        ┌─────────────────┐
+                        │ generate_styles │
+                        └─────────────────┘
+
+┌─────────────────┐     ┌─────────────────┐
+│   site_paths    │────▶│   site_audits   │
+└─────────────────┘     └─────────────────┘
+
+┌─────────────────────────┐     ┌─────────────────────────┐
+│ toolskit-training-dataset│────▶│ toolskit-training-jobs │
+└─────────────────────────┘     └─────────────────────────┘
+```

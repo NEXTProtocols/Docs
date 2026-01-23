@@ -1,0 +1,111 @@
+---
+title: 'Enhance Crawler Prompt'
+description: 'Enhance web crawler prompts using AI for better page targeting'
+---
+
+## Endpoint
+
+```
+POST /c4rust/enhance_crawler_prompt
+```
+
+## Description
+
+Enhances a user's web crawler prompt using an LLM via OpenRouter. This helps create more effective prompts for finding specific pages on websites during SEO audits and web crawling operations.
+
+## Authentication
+
+This endpoint does not require authentication.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `user_prompt` | `string` | Yes | Base prompt describing what pages to find |
+| `instruction_user` | `string` | Yes | Additional instructions for enhancement |
+| `model_openrouter` | `string` | Yes | OpenRouter model to use |
+
+## Example Request
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/c4rust/enhance_crawler_prompt \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_prompt": "pages that talk about pricing",
+    "instruction_user": "be more specific about what pricing info I need",
+    "model_openrouter": "anthropic/claude-3-sonnet"
+  }'
+```
+
+```python python
+import requests
+
+response = requests.post(
+    "http://localhost:8000/c4rust/enhance_crawler_prompt",
+    json={
+        "user_prompt": "pages that talk about pricing",
+        "instruction_user": "be more specific about what pricing info I need",
+        "model_openrouter": "anthropic/claude-3-sonnet"
+    }
+)
+print(response.text)  # Returns the enhanced prompt as string
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+Returns the enhanced prompt as a plain text string:
+
+```
+Find pages containing pricing information including:
+- Subscription tiers and their costs
+- Feature comparison tables
+- Enterprise pricing options
+- Free trial details
+- Payment methods accepted
+Look for URLs containing: /pricing, /plans, /subscription
+Keywords: "per month", "annual billing", "free tier", "enterprise"
+```
+
+## Process Flow
+
+1. **Prompt Construction** - Builds enhancement prompt with guidelines
+2. **LLM Enhancement** - Sends to OpenRouter for processing
+3. **Result Return** - Returns the enhanced crawler prompt
+
+## LLM Prompt Guidelines
+
+The endpoint instructs the LLM with these guidelines for a good crawler prompt:
+
+- Be specific about what content the pages should contain
+- Mention keywords or phrases that should appear on the target pages
+- Specify what type of page it is (pricing page, documentation, blog post)
+- If relevant, mention URL patterns that might help identify the pages
+- Keep it concise but comprehensive
+
+## Use Cases
+
+| User Prompt | Instruction | Result Focus |
+|-------------|-------------|--------------|
+| "pricing pages" | "include enterprise options" | Detailed pricing with enterprise tiers |
+| "documentation" | "focus on API docs" | API reference and integration guides |
+| "blog posts" | "about product updates" | Release notes and feature announcements |
+| "contact pages" | "for sales inquiries" | Sales contact forms and demo requests |
+
+## Popular OpenRouter Models
+
+| Model | Best For |
+|-------|----------|
+| `anthropic/claude-3-sonnet` | Balanced quality and speed |
+| `anthropic/claude-3-haiku` | Fast responses |
+| `openai/gpt-4-turbo` | Complex requirements |
+
+## Notes
+
+- The response is a plain string, not JSON
+- The enhanced prompt is always returned in English
+- Use the enhanced prompt with the web crawler to improve page targeting
+- This endpoint is typically used before starting a site audit

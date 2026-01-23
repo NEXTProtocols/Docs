@@ -75,29 +75,79 @@
             "group": "OVH - API Server",
             "icon": "server",
             "pages": [
-                "api-reference/apiserver/ping",
-                "api-reference/apiserver/delete_user",
-                "api-reference/apiserver/get_public_link",
-                {
-                  "group": "IA Gen",
-                  "icon": "wand-magic-sparkles",
-                  "pages": [
-                    "api-reference/apiserver/ia-gen/texttoimage",
-                    "api-reference/apiserver/c4rust/enhance_prompt",
-                    "api-reference/apiserver/c4rust/enhance_crawler_prompt",
-                    "api-reference/apiserver/c4rust/alt"
-                  ]
-                },
-                {
-                  "group": "Toolskit",
-                  "icon": "toolbox",
-                  "pages": [
-                    "api-reference/apiserver/toolskit/dataset",
-                    "api-reference/apiserver/toolskit/training_jobs_cancel",
-                    "api-reference/apiserver/toolskit/training_jobs_create",
-                    "api-reference/apiserver/toolskit/upscale"
-                  ]
-                }
+              "api-reference/apiserver/overview",
+              "api-reference/apiserver/quickstart",
+              "api-reference/apiserver/installation",
+              "api-reference/apiserver/authentication",
+              "api-reference/apiserver/configuration",
+              {
+                "group": "ComfyAPI",
+                "icon": "image",
+                "pages": [
+                  "api-reference/apiserver/comfyapi/texttoimage"
+                ]
+              },
+              {
+                "group": "Toolskit",
+                "icon": "toolbox",
+                "pages": [
+                  "api-reference/apiserver/toolskit/upscale",
+                  "api-reference/apiserver/toolskit/dataset",
+                  "api-reference/apiserver/toolskit/training-jobs",
+                  "api-reference/apiserver/toolskit/cancel-jobs"
+                ]
+              },
+              {
+                "group": "C4Rust",
+                "icon": "wand-magic-sparkles",
+                "pages": [
+                  "api-reference/apiserver/c4rust/enhance-prompt",
+                  "api-reference/apiserver/c4rust/enhance-crawler-prompt",
+                  "api-reference/apiserver/c4rust/alt"
+                ]
+              },
+              {
+                "group": "Core",
+                "icon": "gear",
+                "pages": [
+                  "api-reference/apiserver/core/get-public-link",
+                  "api-reference/apiserver/core/cancel-workflow",
+                  "api-reference/apiserver/core/delete-user"
+                ]
+              },
+              {
+                "group": "Temporal",
+                "icon": "clock",
+                "pages": [
+                  "api-reference/apiserver/temporal/architecture",
+                  "api-reference/apiserver/temporal/workers",
+                  "api-reference/apiserver/temporal/activities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "api-reference/apiserver/temporal/workflows/text-to-image",
+                      "api-reference/apiserver/temporal/workflows/upscale",
+                      "api-reference/apiserver/temporal/workflows/generate-profile",
+                      "api-reference/apiserver/temporal/workflows/delete-user"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Database",
+                "icon": "database",
+                "pages": [
+                  "api-reference/apiserver/database/schema",
+                  "api-reference/apiserver/database/triggers"
+                ]
+              },
+              {
+                "group": "Listeners",
+                "icon": "bell",
+                "pages": [
+                  "api-reference/apiserver/listeners/postgres-listeners"
+                ]
+              }
             ]
           },
           {

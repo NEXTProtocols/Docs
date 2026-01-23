@@ -1,0 +1,183 @@
+---
+title: 'Installation'
+description: 'How to install and configure the NEXTProtocol API Server'
+---
+
+## Requirements
+
+- Python 3.12 or higher
+- Docker and Docker Compose
+- Make (optional, for convenience commands)
+
+## Installation
+
+### Using Docker (Recommended)
+
+Build all Docker images (API, Worker, PostgreSQL Notifier):
+
+```bash
+make build
+```
+
+Build individual components:
+
+```bash
+# Build just the worker
+make build-worker
+
+# Build just the API
+make build-api
+```
+
+### Local Development
+
+1. Clone the repository and navigate to the project directory:
+
+```bash
+git clone <repository-url>
+cd APIServer
+```
+
+2. Create a virtual environment and install dependencies:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+3. Configure environment variables:
+
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+## Configuration
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure the required variables:
+
+```bash
+cp .env.example .env
+```
+
+Required variables are grouped by service:
+
+| Category | Variables |
+|----------|-----------|
+| Temporal | `TEMPORAL_URL`, `TEMPORAL_NAMESPACE_*` |
+| Supabase (Main) | `SUPABASE_URL`, `SUPABASE_KEY`, `SUPABASE_DB_DSN` |
+| Supabase (Photomaintenant) | `SUPABASE_PHOTOMAINTENANT_URL`, `SUPABASE_PHOTOMAINTENANT_KEY` |
+| S3 Storage | `S3_ENDPOINT`, `S3_BUCKET`, `S3_KEY_ID`, `S3_SECRET` |
+| RunPod | `RUNPOD_API_KEY`, `RUNPOD_ENDPOINT_*` |
+| Authentication | `API_BEARER_TOKEN`, `API_PUBLIC_LINK_TOKEN` |
+
+See [Environment Variables](/configuration/environment) for the complete list.
+
+## Running the Server
+
+### Docker Compose
+
+Start all services:
+
+```bash
+docker-compose up -d
+```
+
+### Local Development
+
+Run individual components manually:
+
+<CodeGroup>
+```bash API Server
+cd src && uvicorn api.app:app --host 0.0.0.0 --port 8000 --workers 4
+```
+
+```bash PostgreSQL Listener
+cd src && python3 -m listeners.api_listener
+```
+
+```bash C4Rust Worker
+cd src && python3 -m temporal.workers.c4rust
+```
+
+```bash Photomaintenant Worker
+cd src && python3 -m temporal.workers.photomaintenant
+```
+</CodeGroup>
+
+### Using Make
+
+```bash
+# Run local API server
+make local-api
+```
+
+## Verifying Installation
+
+### Health Check
+
+Once the server is running, verify it with a health check:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "healthy"
+}
+```
+
+### Authenticated Request
+
+Test authentication with the root endpoint:
+
+```bash
+curl -H "Authorization: Bearer $API_BEARER_TOKEN" http://localhost:8000/
+```
+
+Expected response:
+
+```json
+{
+  "message": "Demon slayer is the best anime of all time",
+  "host": "localhost",
+  "is_development": false
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Connection refused on Temporal**
+
+Ensure Temporal server is running and `TEMPORAL_URL` is correctly configured:
+
+```bash
+# Check if Temporal is accessible
+curl http://localhost:7233
+```
+
+**Database connection failed**
+
+Verify Supabase credentials in `.env`:
+
+```bash
+# Test database connection
+psql $SUPABASE_DB_DSN -c "SELECT 1"
+```
+
+**S3 upload errors**
+
+Check S3 credentials and bucket permissions:
+
+```bash
+# Verify S3 configuration
+aws s3 ls s3://$S3_BUCKET --endpoint-url $S3_ENDPOINT
+```

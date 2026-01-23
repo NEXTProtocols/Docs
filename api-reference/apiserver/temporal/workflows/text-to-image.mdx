@@ -1,0 +1,197 @@
+---
+title: 'Text to Image Workflow'
+description: 'Temporal workflow for AI image generation'
+---
+
+## Overview
+
+The Text to Image workflow orchestrates the complete image generation pipeline, from session creation to result storage.
+
+## Workflow Definition
+
+| Property | Value |
+|----------|-------|
+| **Name** | `Text to Image` |
+| **Class** | `WFTextToImage` |
+| **File** | `src/temporal/workflows/texttoimage.py` |
+| **Namespace** | `ChatAI-Production` |
+| **Task Queue** | `task-queue-production` |
+
+## Input
+
+```python
+@dataclass
+class WFTextToImageInput:
+    uuid_client: str
+    session_id: str
+    model_id: str
+    loras: list[dict[str, Any]]
+    settings: dict[str, Any]
+    controlnet: dict[str, Any]
+```
+
+### Settings Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `prompt` | `str` | Text prompt for generation |
+| `steps` | `int` | Number of inference steps |
+| `quality` | `str` | Quality level |
+| `batch_size` | `int` | Number of images |
+| `image_ratio` | `str` | Aspect ratio |
+| `seed` | `int` | Random seed |
+
+## Output
+
+```python
+dict[str, Any]  # Supabase record from image_generation table
+```
+
+## Workflow Steps
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Text to Image Workflow                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. create_session_supabase_texttoimage                      │
+│     └─▶ Creates session in Supabase                         │
+│         Returns: runpod_input, endpoint_id, indexe           │
+│                                                              │
+│  2. run_texttoimage_sync                                     │
+│     └─▶ Starts job on RunPod                                │
+│         Waits for IN_PROGRESS status                        │
+│         Returns: job_id                                      │
+│                                                              │
+│  3. waiting_for_runpod_texttoimage                          │
+│     └─▶ Polls RunPod until completion                       │
+│         Updates Supabase with progress                       │
+│         Handles heartbeats                                   │
+│                                                              │
+│  4. fetch_supabase_record                                    │
+│     └─▶ Retrieves final result from database                │
+│         Returns: Complete record with image URLs             │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Activities
+
+### create_session_supabase_texttoimage
+
+Creates the initial session record in Supabase.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 60 seconds |
+| Heartbeat | 5 seconds |
+
+**Returns:**
+```python
+{
+    "runpod_input": dict,  # Input for RunPod
+    "endpoint_id": str,    # RunPod endpoint
+    "indexe": int         # Supabase record ID
+}
+```
+
+### run_texttoimage_sync
+
+Starts the GPU job on RunPod and waits for it to begin processing.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 1 hour |
+| Heartbeat | 10 seconds |
+
+**Returns:** `job_id` (string)
+
+### waiting_for_runpod_texttoimage
+
+Polls RunPod until the job completes, updating Supabase with progress.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 3 attempts |
+| Timeout | 1000 seconds |
+| Heartbeat | 10 seconds |
+
+**Input:**
+```python
+PollRunpodInput(
+    job_id=str,
+    endpoint_id=str,
+    supabase_table="image_generation",
+    supabase_index=int,
+    quality=str,
+    model_id=str,
+    steps=int,
+    number_picture=int
+)
+```
+
+### fetch_supabase_record
+
+Retrieves the final result from Supabase.
+
+| Property | Value |
+|----------|-------|
+| Retry Policy | 1 attempt |
+| Timeout | 30 seconds |
+
+**Returns:** Complete Supabase record
+
+## Cancellation Handling
+
+When the workflow is cancelled:
+
+```python
+except asyncio.CancelledError:
+    workflow.logger.info("Workflow cancelled, cleaning up RunPod job...")
+    async with workflow.new_detached_cancellation_scope():
+        await workflow.execute_activity(
+            "cancel_runpod_job",
+            poll_input,
+            start_to_close_timeout=timedelta(seconds=30),
+        )
+    raise
+```
+
+**Cleanup Actions:**
+1. Logs cancellation
+2. Cancels the RunPod GPU job
+3. Runs in detached scope (completes even after workflow cancelled)
+4. Re-raises the cancellation error
+
+## Search Attributes
+
+| Attribute | Value |
+|-----------|-------|
+| `CustomTextField` | User email |
+| `Project` | `C4Rust` |
+| `ModelId` | Model identifier |
+
+## Memo
+
+```python
+{
+    "user": user_email,
+    "model": model_id,
+    "prompt": prompt_preview,  # First 100 chars
+    "quality": quality,
+    "batch_size": batch_size
+}
+```
+
+## Error Handling
+
+- Activities use single-attempt retry for fast failure
+- Polling activity retries up to 3 times for transient errors
+- Cancellation triggers cleanup before propagating error
+- All errors are logged via `workflow.logger`
+
+## Database Table
+
+Results are stored in `image_generation` table in Supabase.

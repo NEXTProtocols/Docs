@@ -1,0 +1,129 @@
+---
+title: 'Authentication'
+description: 'Bearer token authentication for the NEXTProtocol API'
+---
+
+## Overview
+
+The NEXTProtocol API uses Bearer token authentication. All protected endpoints require a valid token in the `Authorization` header.
+
+## Authentication Tokens
+
+The API supports two types of tokens for different use cases:
+
+| Token | Environment Variable | Purpose |
+|-------|---------------------|---------|
+| Main API Token | `API_BEARER_TOKEN` | Access to all protected endpoints |
+| Public Link Token | `API_PUBLIC_LINK_TOKEN` | Limited access to `/get_public_link` endpoint |
+
+## Using Authentication
+
+### Request Format
+
+Include the Bearer token in the `Authorization` header:
+
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+### Example Request
+
+<CodeGroup>
+```bash curl
+curl -X GET http://localhost:8000/ \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+```python python
+import requests
+
+response = requests.get(
+    "http://localhost:8000/",
+    headers={"Authorization": "Bearer YOUR_API_TOKEN"}
+)
+```
+
+```javascript javascript
+const response = await fetch("http://localhost:8000/", {
+  headers: {
+    "Authorization": "Bearer YOUR_API_TOKEN"
+  }
+});
+```
+</CodeGroup>
+
+## Error Responses
+
+### Invalid or Missing Token
+
+When authentication fails, the API returns a 401 Unauthorized response:
+
+```json
+{
+  "detail": "Invalid or expired token"
+}
+```
+
+### Invalid Auth Scheme
+
+If the authorization scheme is not `Bearer`:
+
+```json
+{
+  "detail": "Invalid auth scheme"
+}
+```
+
+## Token Validation
+
+The API validates tokens against configured values in the environment:
+
+```python
+# Main API token validation
+def check_token_in_db_or_jwt(token: str) -> bool:
+    return token == settings.api_bearer_token
+
+# Public link token validation
+def check_token_get_public_link(token: str) -> bool:
+    return token == settings.api_public_link_token
+```
+
+## Endpoint Token Requirements
+
+| Endpoint | Token Required |
+|----------|---------------|
+| `GET /health` | No authentication |
+| `GET /` | Main API Token |
+| `POST /comfyapi/texttoimage` | Main API Token |
+| `POST /toolskit/*` | Main API Token |
+| `POST /c4rust/*` | Main API Token (or no auth for some) |
+| `POST /get_public_link` | Public Link Token |
+| `POST /cancel_workflow` | Main API Token |
+| `DELETE /photomaintenant/delete_user` | Main API Token |
+
+## Security Best Practices
+
+1. **Never expose tokens in client-side code** - Keep tokens server-side only
+2. **Use environment variables** - Never hardcode tokens in source code
+3. **Rotate tokens regularly** - Update tokens periodically for security
+4. **Use HTTPS** - Always use encrypted connections in production
+5. **Limit token scope** - Use the Public Link Token when possible instead of the Main API Token
+
+## CORS Configuration
+
+The API allows requests from the following origins:
+
+- `https://c4-rust-theta.vercel.app`
+- `http://localhost:3000`
+- `http://127.0.0.1:3000`
+- `http://[::1]:3000`
+- Any `*.vercel.app` subdomain
+
+CORS headers returned:
+
+```
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+Access-Control-Max-Age: 86400
+```

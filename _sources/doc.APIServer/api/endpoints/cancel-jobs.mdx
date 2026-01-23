@@ -1,0 +1,95 @@
+---
+title: 'Cancel Jobs'
+description: 'Cancel running training jobs on RunPod'
+---
+
+## Endpoint
+
+```
+POST /toolskit/cancel_jobs
+```
+
+## Description
+
+Cancels a running training job on RunPod. The endpoint retrieves the job information from Supabase, sends a cancel request to RunPod, and updates the job status to `CANCELLED`.
+
+## Authentication
+
+Requires Bearer token authentication with the main API token.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id_job` | `integer` | Yes | ID of the training job to cancel |
+
+## Example Request
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/toolskit/cancel_jobs \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id_job": 42
+  }'
+```
+
+```python python
+import requests
+
+response = requests.post(
+    "http://localhost:8000/toolskit/cancel_jobs",
+    headers={
+        "Authorization": "Bearer YOUR_API_TOKEN",
+        "Content-Type": "application/json"
+    },
+    json={
+        "id_job": 42
+    }
+)
+print(response.json())
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+```json
+{
+  "message": "Jobs cancelled",
+  "runpod_job_id": "abc123def456"
+}
+```
+
+### Error Responses
+
+**Job Not Found (404)**
+
+```json
+{
+  "detail": "Job not found"
+}
+```
+
+## Process Flow
+
+1. **Job Lookup** - Retrieves job from `toolskit-training-jobs` table
+2. **RunPod Cancel** - Sends cancel request to RunPod API
+3. **Status Update** - Updates job status to `CANCELLED` with finish timestamp
+
+## Job Status
+
+After cancellation, the job record is updated:
+
+| Field | Value |
+|-------|-------|
+| `status` | `CANCELLED` |
+| `finish_at` | Current UTC timestamp |
+
+## Notes
+
+- Cancelling a job that has already completed has no effect on RunPod
+- The database status is always updated regardless of RunPod response
+- Use this endpoint to stop long-running training jobs that are no longer needed

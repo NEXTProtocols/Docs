@@ -1,0 +1,111 @@
+---
+title: 'Cancel Workflow'
+description: 'Cancel running Temporal workflows'
+---
+
+## Endpoint
+
+```
+POST /cancel_workflow
+```
+
+## Description
+
+Cancels a running Temporal workflow by its ID. This endpoint is used to stop long-running workflows such as image generation or training jobs.
+
+## Authentication
+
+Requires Bearer token authentication with the main API token.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `workflow_id` | `string` | Yes | Temporal workflow ID to cancel |
+| `reason` | `string` | Yes | Reason for cancellation |
+
+## Example Request
+
+<CodeGroup>
+```bash curl
+curl -X POST http://localhost:8000/cancel_workflow \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workflow_id": "texttoimage-abc12345-def67890",
+    "reason": "User requested cancellation"
+  }'
+```
+
+```python python
+import requests
+
+response = requests.post(
+    "http://localhost:8000/cancel_workflow",
+    headers={
+        "Authorization": "Bearer YOUR_API_TOKEN",
+        "Content-Type": "application/json"
+    },
+    json={
+        "workflow_id": "texttoimage-abc12345-def67890",
+        "reason": "User requested cancellation"
+    }
+)
+print(response.text)
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+Returns a plain text confirmation:
+
+```
+Workflow cancelled successfully
+```
+
+## Workflow ID Formats
+
+| Workflow Type | ID Format | Example |
+|---------------|-----------|---------|
+| Text to Image | `texttoimage-{session_id_short}-{user_id_short}` | `texttoimage-abc12345-def67890` |
+| Delete User | `delete-user-{user_id_short}` | `delete-user-abc12345` |
+| Generate Style | `gen-style-{profile_id_short}-{index}` | `gen-style-abc12345-0` |
+
+## Process Flow
+
+1. **Connect to Temporal** - Establishes connection to Temporal server
+2. **Get Handle** - Retrieves workflow handle by ID
+3. **Cancel Workflow** - Sends cancellation request
+4. **Cleanup** - Workflow executes cleanup activities in detached scope
+
+## Workflow Cancellation Behavior
+
+When a workflow is cancelled, it triggers cleanup activities:
+
+### Text to Image / Upscale
+- Cancels the RunPod GPU job
+- Updates database status
+- Runs in detached scope (completes even after cancellation)
+
+### Delete User
+- Unbans the user (reverses the 30-day ban)
+- Logs the cancellation
+
+## Temporal Namespace
+
+This endpoint operates in the `ChatAI-Production` namespace. To cancel workflows in other namespaces:
+
+| Namespace | Workflows |
+|-----------|-----------|
+| `ChatAI-Production` | Text to Image, Upscale |
+| `Photomaintenant-Production` | Generate Profile, Delete User |
+
+## Notes
+
+- Cancellation is asynchronous - the endpoint returns immediately
+- Cancelled workflows execute cleanup in a detached scope
+- The `reason` field is logged but not stored in the workflow
+- Cancelling a completed workflow has no effect
+- Workflows in `Photomaintenant-Production` namespace require separate handling

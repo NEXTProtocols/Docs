@@ -1,0 +1,273 @@
+---
+title: 'PostgreSQL Triggers'
+description: 'Database triggers for event-driven workflows'
+---
+
+## Overview
+
+PostgreSQL triggers enable event-driven architecture by sending NOTIFY events when specific database changes occur. Python listeners receive these events and start Temporal workflows or other processing.
+
+## trigger_crawl_url
+
+Triggers web crawling when a new audit request is queued.
+
+### Configuration
+
+| Property | Value |
+|----------|-------|
+| **Table** | `site_audits` |
+| **Events** | `AFTER INSERT OR UPDATE` |
+| **Channel** | `demande_crawl_url` |
+| **Condition** | `status = 'QUEUE' AND finish_at IS NULL` |
+
+### Function
+
+```sql
+CREATE OR REPLACE FUNCTION notify_crawl_url()
+RETURNS TRIGGER AS $$
+DECLARE
+    payload JSON;
+    full_url TEXT;
+    site_base_url TEXT;
+    site_path TEXT;
+BEGIN
+    -- Get base_url and path from site_paths
+    SELECT base_url, path INTO site_base_url, site_path
+    FROM public.site_paths
+    WHERE id = NEW.site_id;
+
+    -- Build full URL
+    IF site_path IS NOT NULL AND site_path != '' THEN
+        full_url := site_base_url || site_path;
+    ELSE
+        full_url := site_base_url;
+    END IF;
+
+    -- Build JSON payload
+    payload := json_build_object(
+        'id', NEW.id,
+        'url', full_url,
+        'user_id', NEW.user_id,
+        'prompt', NEW.prompt,
+        'used_proxy', NEW.used_proxy,
+        'used_sitemap', NEW.used_sitemap,
+        'used_full_crawl', NEW.used_full_crawl,
+        'number_page', NEW.number_page,
+        'number_depth', NEW.number_depth
+    );
+
+    -- Send notification
+    PERFORM pg_notify('demande_crawl_url', payload::TEXT);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+### Payload
+
+```json
+{
+  "id": 123,
+  "url": "https://example.com/pricing",
+  "user_id": "user-uuid",
+  "prompt": "Extract pricing information",
+  "used_proxy": "basic",
+  "used_sitemap": true,
+  "used_full_crawl": true,
+  "number_page": 10,
+  "number_depth": 2
+}
+```
+
+### Usage
+
+```sql
+-- Insert a new audit request (triggers notification)
+INSERT INTO site_audits (
+    site_id, user_id, status, prompt, number_page
+) VALUES (
+    1, 'user-uuid', 'QUEUE', 'Extract main content', 5
+);
+
+-- Update to trigger (if previously not QUEUE)
+UPDATE site_audits
+SET status = 'QUEUE'
+WHERE id = 123 AND finish_at IS NULL;
+```
+
+## trigger_klingai_motion
+
+Triggers KlingAI video motion generation when a new request is queued.
+
+### Configuration
+
+| Property | Value |
+|----------|-------|
+| **Table** | `video_motion` |
+| **Events** | `AFTER INSERT OR UPDATE` |
+| **Channel** | `demande_klingai_motion` |
+| **Condition** | `status = 'QUEUE' AND request_finish_at IS NULL` |
+
+### Function
+
+```sql
+CREATE OR REPLACE FUNCTION notify_klingai_motion()
+RETURNS TRIGGER AS $$
+DECLARE
+    payload JSON;
+BEGIN
+    payload := json_build_object(
+        'indexe', NEW.indexe,
+        'session_id', NEW.session_id,
+        'user_id', NEW.user_id,
+        'input_image_url', NEW.input_image_url,
+        'input_video_url', NEW.input_video_url,
+        'audio', NEW.audio,
+        'quality', NEW.quality,
+        'number_output', NEW.number_output,
+        'video_start', NEW.video_start,
+        'video_end', NEW.video_end
+    );
+
+    PERFORM pg_notify('demande_klingai_motion', payload::TEXT);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+### Payload
+
+```json
+{
+  "indexe": 456,
+  "session_id": "session-uuid",
+  "user_id": "user-uuid",
+  "input_image_url": "https://...",
+  "input_video_url": null,
+  "audio": true,
+  "quality": "high",
+  "number_output": 2,
+  "video_start": "camera zoom in",
+  "video_end": "fade to black"
+}
+```
+
+## PostgreSQL NOTIFY/LISTEN
+
+### How It Works
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Client    │────▶│  PostgreSQL │────▶│   Trigger   │
+│  (INSERT)   │     │  (Database) │     │ (Function)  │
+└─────────────┘     └─────────────┘     └─────────────┘
+                                              │
+                                              ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Python    │◀────│   asyncpg   │◀────│  pg_notify  │
+│  (Handler)  │     │  (Listener) │     │  (Channel)  │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+### Listening in Python
+
+```python
+import asyncpg
+
+async def main():
+    conn = await asyncpg.connect(dsn)
+
+    async def on_notification(conn, pid, channel, payload):
+        if channel == "demande_crawl_url":
+            await handle_crawl(payload)
+        elif channel == "demande_klingai_motion":
+            await handle_motion(payload)
+
+    await conn.add_listener("demande_crawl_url", on_notification)
+    await conn.add_listener("demande_klingai_motion", on_notification)
+
+    # Keep alive
+    while True:
+        await asyncio.sleep(3600)
+```
+
+## Preventing Re-triggers
+
+Both triggers use a "finish" timestamp to prevent re-triggering:
+
+### Crawl URL Pattern
+
+```sql
+WHEN (
+    NEW.status = 'QUEUE'
+    AND NEW.finish_at IS NULL  -- Not yet processed
+)
+```
+
+After processing:
+```python
+# Python sets finish_at when done
+update_audit_status(audit_id, "COMPLETED", finish_at=now())
+```
+
+### KlingAI Pattern
+
+```sql
+WHEN (
+    NEW.status = 'QUEUE'
+    AND NEW.request_finish_at IS NULL  -- Not yet processed
+)
+```
+
+After processing:
+```python
+# Python sets request_finish_at when done
+update_status(indexe, "COMPLETED", request_finish_at=now())
+```
+
+## Verification Queries
+
+### Check Trigger Exists
+
+```sql
+SELECT * FROM pg_trigger WHERE tgname = 'trigger_crawl_url';
+SELECT * FROM pg_trigger WHERE tgname = 'trigger_klingai_motion';
+```
+
+### Check Function Exists
+
+```sql
+SELECT proname FROM pg_proc WHERE proname = 'notify_crawl_url';
+SELECT proname FROM pg_proc WHERE proname = 'notify_klingai_motion';
+```
+
+### List All Triggers on Table
+
+```sql
+SELECT tgname, tgenabled
+FROM pg_trigger
+WHERE tgrelid = 'public.site_audits'::regclass;
+
+SELECT tgname, tgenabled
+FROM pg_trigger
+WHERE tgrelid = 'public.video_motion'::regclass;
+```
+
+## PostgreSQL Channels
+
+| Channel | Table | Handler |
+|---------|-------|---------|
+| `demande_upscale` | - | `trigger_temporal_workflow` |
+| `demande_map_url` | - | `trigger_map_url` |
+| `demande_crawl_url` | `site_audits` | `trigger_crawl_url` |
+| `demande_klingai_motion` | `video_motion` | `trigger_klingai_motion` |
+
+## Best Practices
+
+1. **Always check finish timestamp** - Prevents duplicate processing
+2. **Use AFTER triggers** - Ensures data is committed
+3. **Keep payloads small** - Large payloads can cause issues
+4. **Log notifications** - Use `RAISE NOTICE` for debugging
+5. **Handle errors gracefully** - Listeners should catch exceptions

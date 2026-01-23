@@ -1,0 +1,189 @@
+---
+title: 'Activities'
+description: 'Complete list of Temporal activities by worker'
+---
+
+## Overview
+
+Activities are the work units in Temporal workflows. They handle external calls, database operations, and other side effects.
+
+## C4Rust Worker Activities
+
+### Text to Image Activities
+
+| Activity | File | Description |
+|----------|------|-------------|
+| `create_session_supabase_texttoimage` | `runpod_texttoimage.py` | Creates session record in Supabase |
+| `run_texttoimage_sync` | `runpod_texttoimage.py` | Starts GPU job on RunPod |
+| `waiting_for_runpod_texttoimage` | `runpod_texttoimage.py` | Polls RunPod until completion |
+
+### Upscale Activities
+
+| Activity | File | Description |
+|----------|------|-------------|
+| `prepare_input_for_runpod_upscale` | `runpod_upscale.py` | Prepares RunPod input payload |
+| `run_upscale` | `runpod_upscale.py` | Starts upscale job on RunPod |
+| `waiting_upscale` | `runpod_upscale.py` | Polls RunPod until completion |
+
+### Shared Activities
+
+| Activity | File | Description |
+|----------|------|-------------|
+| `check_runpod_status` | `shared_runpod.py` | Checks job status on RunPod |
+| `fetch_supabase_record` | `shared_runpod.py` | Retrieves record from Supabase |
+| `cancel_runpod_job` | `shared_runpod.py` | Cancels running RunPod job |
+
+## Photomaintenant Worker Activities
+
+### Generate Picture Activities
+
+| Activity | File | Description |
+|----------|------|-------------|
+| `create_session_supabase_photomaintenant_gen_picture` | `photomaintenant_genpicture.py` | Creates style records in Supabase |
+| `prepare_data_for_runpod` | `photomaintenant_genpicture.py` | Prepares ComfyUI workflow data |
+| `run_jobs_runpod_and_wait_start_generate` | `photomaintenant_genpicture.py` | Starts generation job |
+| `get_result_picture` | `photomaintenant_genpicture.py` | Retrieves generated images |
+| `generate_zip_crop_picture` | `photomaintenant_genpicture.py` | Creates cropped face ZIP |
+| `training_lora_model` | `photomaintenant_genpicture.py` | Trains LoRA model |
+| `send_email_to_user` | `photomaintenant_genpicture.py` | Sends completion email |
+
+### Delete User Activities
+
+| Activity | File | Description |
+|----------|------|-------------|
+| `ban_user_from_app` | `photomaintenant_deleteuser.py` | Bans user account |
+| `delete_user_from_app` | `photomaintenant_deleteuser.py` | Deletes user data |
+| `unban_user_from_app` | `photomaintenant_deleteuser.py` | Restores user access |
+
+## External Services Used
+
+### RunPod
+
+Activities interact with RunPod for GPU inference:
+
+```python
+# Start a job
+runpod_endpoint.run(runpod_input)
+
+# Check status
+runpod_endpoint.status(job_id)
+
+# Cancel job
+runpod_endpoint.cancel(job_id)
+```
+
+**Endpoints:**
+| Endpoint | Purpose |
+|----------|---------|
+| `TEXT_TO_IMAGE` | Image generation |
+| `UPSCALE` | Image upscaling |
+| `PHOTOMAINTENANT_GEN_PICTURE` | Photo generation |
+| `PHOTOMAINTENANT_TRAINING` | LoRA training |
+
+### Supabase
+
+Activities use Supabase for database operations:
+
+```python
+# Insert record
+supabase_client.table("table_name").insert(data).execute()
+
+# Update record
+supabase_client.table("table_name").update(data).eq("id", id).execute()
+
+# Select record
+supabase_client.table("table_name").select("*").eq("id", id).execute()
+```
+
+**Tables Used:**
+- `image_generation` - Text to image results
+- `image_upscale` - Upscale results
+- `profiles` - User profiles (Photomaintenant)
+- `generate_styles` - Style configurations
+
+### S3 Storage
+
+Activities upload files to OVH S3:
+
+```python
+# Upload file
+s3_client.upload_file_public(content, path)
+
+# Generate signed URL
+s3_client.get_signed_url(path)
+```
+
+**Buckets:**
+- Main bucket - Generated images
+- LoRA bucket - Training data and models
+
+## Activity Patterns
+
+### Polling Pattern
+
+Long-running jobs use polling:
+
+```python
+@activity.defn
+async def waiting_for_job(poll_input: PollRunpodInput):
+    while True:
+        status = await check_status(poll_input.job_id)
+        if status == "COMPLETED":
+            return await fetch_result(poll_input)
+        if status == "FAILED":
+            raise ActivityError("Job failed")
+        activity.heartbeat()  # Keep workflow alive
+        await asyncio.sleep(5)
+```
+
+### Heartbeat Pattern
+
+Activities report progress via heartbeats:
+
+```python
+@activity.defn
+async def long_running_activity(input):
+    for i, item in enumerate(items):
+        process(item)
+        activity.heartbeat(f"Processing {i}/{len(items)}")
+```
+
+### Error Handling
+
+Activities should raise exceptions for failures:
+
+```python
+@activity.defn
+async def some_activity(input):
+    try:
+        result = await external_call(input)
+        return result
+    except ExternalError as e:
+        raise ActivityError(f"External call failed: {e}")
+```
+
+## Activity Configuration
+
+### Timeout Settings
+
+| Type | Description | Typical Value |
+|------|-------------|---------------|
+| `schedule_to_close_timeout` | Max time from scheduling | 30s - 24h |
+| `start_to_close_timeout` | Max time from start | 30s - 1000s |
+| `heartbeat_timeout` | Max time between heartbeats | 5s - 20s |
+
+### Retry Policy
+
+```python
+from temporalio.common import RetryPolicy
+
+# Single attempt (no retries)
+retry_policy = RetryPolicy(maximum_attempts=1)
+
+# With retries
+retry_policy = RetryPolicy(
+    maximum_attempts=3,
+    initial_interval=timedelta(seconds=1),
+    backoff_coefficient=2.0,
+)
+```

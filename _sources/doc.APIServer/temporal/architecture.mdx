@@ -1,0 +1,205 @@
+---
+title: 'Temporal Architecture'
+description: 'Overview of Temporal workflow orchestration in NEXTProtocol'
+---
+
+## Overview
+
+NEXTProtocol uses Temporal for durable workflow orchestration. Temporal provides reliable execution of long-running processes with automatic retries, state persistence, and graceful cancellation handling.
+
+## Key Concepts
+
+### Workflows
+
+Workflows define the orchestration logic - the sequence of steps to execute. They are:
+
+- **Deterministic** - Same input always produces same sequence of activities
+- **Durable** - State survives process restarts
+- **Long-running** - Can run for minutes, hours, or days
+
+### Activities
+
+Activities are the actual work units. They:
+
+- Make external API calls (RunPod, Supabase, S3)
+- Can fail and be retried
+- Are executed by workers
+
+### Workers
+
+Workers poll for tasks and execute workflows/activities:
+
+- Run as separate processes
+- Can be scaled horizontally
+- Each handles a specific task queue
+
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         TEMPORAL SERVER                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │  Namespace  │  │  Namespace  │  │       Task Queues       │  │
+│  │  ChatAI-    │  │  Photomain- │  │  ┌─────────────────┐    │  │
+│  │  Production │  │  tenant-    │  │  │ production      │    │  │
+│  └─────────────┘  │  Production │  │  │ photomaintenant │    │  │
+│                   └─────────────┘  │  └─────────────────┘    │  │
+└─────────────────────────────────────────────────────────────────┘
+         │                    │
+         │                    │
+         ▼                    ▼
+┌─────────────────┐  ┌─────────────────┐
+│  C4Rust Worker  │  │  Photomaintenant│
+│  ┌───────────┐  │  │     Worker      │
+│  │ Workflows │  │  │  ┌───────────┐  │
+│  │-TextToImg │  │  │  │ Workflows │  │
+│  │-Upscale   │  │  │  │-GenProfile│  │
+│  ├───────────┤  │  │  │-DeleteUser│  │
+│  │Activities │  │  │  ├───────────┤  │
+│  │-RunPod    │  │  │  │Activities │  │
+│  │-Supabase  │  │  │  │-Training  │  │
+│  └───────────┘  │  │  │-Email     │  │
+└─────────────────┘  │  └───────────┘  │
+                     └─────────────────┘
+```
+
+## Namespaces
+
+| Namespace | Purpose | Task Queue |
+|-----------|---------|------------|
+| `ChatAI-Production` | Main C4Rust workflows | `task-queue-production` |
+| `ChatAI-Development` | Development testing | `task-queue-development` |
+| `Photomaintenant-Production` | Photomaintenant workflows | `task-queue-photomaintenant` |
+
+## Workflow Patterns
+
+### 1. Polling Pattern
+
+For long-running GPU jobs, workflows use a polling pattern instead of blocking:
+
+```python
+# Start job
+job_id = await workflow.execute_activity("start_job", ...)
+
+# Poll until complete
+await workflow.execute_activity("wait_for_completion", job_id, ...)
+
+# Fetch results
+return await workflow.execute_activity("fetch_results", ...)
+```
+
+**Benefits:**
+- Workers don't block during GPU processing
+- Resources are efficiently utilized
+- Heartbeats keep the workflow alive
+
+### 2. Cancellation Handling
+
+Workflows support graceful cancellation with cleanup:
+
+```python
+try:
+    await workflow.execute_activity("long_running_job", ...)
+except asyncio.CancelledError:
+    # Cleanup runs even when cancelled
+    async with workflow.new_detached_cancellation_scope():
+        await workflow.execute_activity("cleanup", ...)
+    raise
+```
+
+**Key Points:**
+- Cleanup activities run in detached scope
+- Detached scope continues even after parent is cancelled
+- External resources (RunPod jobs) are properly cleaned up
+
+### 3. Child Workflows
+
+For parallel processing, parent workflows spawn children:
+
+```python
+handles = []
+for style in styles:
+    handle = await workflow.start_child_workflow(
+        GenerateStyle.run,
+        style,
+        id=f"gen-style-{profile_id}-{index}"
+    )
+    handles.append(handle)
+
+# Wait for all children
+results = await asyncio.gather(*handles, return_exceptions=True)
+```
+
+**Benefits:**
+- Parallel execution of independent tasks
+- Individual failure handling
+- Better visibility in Temporal UI
+
+## Retry Policies
+
+### Default Policy
+
+```python
+retry_policy = RetryPolicy(maximum_attempts=1)
+```
+
+Most activities use single-attempt with no retries, relying on the polling pattern for reliability.
+
+### Polling Activities
+
+```python
+retry_policy = RetryPolicy(maximum_attempts=3)
+```
+
+Polling activities may retry on transient failures.
+
+## Timeouts
+
+| Timeout Type | Purpose | Typical Value |
+|--------------|---------|---------------|
+| `schedule_to_close` | Max time from scheduling to completion | 30s - 1hr |
+| `start_to_close` | Max time from start to completion | 30s - 1000s |
+| `heartbeat` | Max time between heartbeats | 5-20s |
+
+## Workflow IDs
+
+Workflows use descriptive, unique IDs:
+
+| Pattern | Example |
+|---------|---------|
+| `texttoimage-{session}-{user}` | `texttoimage-abc12345-def67890` |
+| `delete-user-{user}` | `delete-user-abc12345` |
+| `gen-style-{profile}-{index}` | `gen-style-abc12345-0` |
+
+## Search Attributes
+
+Workflows are tagged for querying:
+
+| Attribute | Description |
+|-----------|-------------|
+| `CustomTextField` | User email or ID |
+| `Project` | Project name (C4Rust, Photomaintenant) |
+| `ModelId` | AI model used |
+
+## Memos
+
+Workflows store contextual information in memos:
+
+```python
+memo={
+    "user": user_email,
+    "model": model_id,
+    "prompt": prompt_preview,
+    "quality": quality,
+}
+```
+
+Memos are visible in Temporal UI but not indexed for search.
+
+## Best Practices
+
+1. **Keep workflows deterministic** - No random, time, or I/O in workflow code
+2. **Use activities for all external calls** - Database, API, file operations
+3. **Handle cancellation gracefully** - Clean up external resources
+4. **Use heartbeats for long activities** - Prevent timeout during processing
+5. **Log with workflow.logger** - Logs are associated with workflow execution
